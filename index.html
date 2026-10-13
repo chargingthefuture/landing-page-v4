@@ -72,6 +72,8 @@ select, input[type="text"] { width: 100%; font: 400 1rem var(--sans); color: var
 .facts b { font: 500 1.6rem/1 var(--serif); font-variant-numeric: tabular-nums; }
 .facts span { font-size: .8rem; color: var(--soft); line-height: 1.3; }
 .proof p { margin: 0; font-size: .95rem; }
+.facts.quora { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.facts.quora b { font-size: 1.25rem; }
 
 /* Two doors */
 .doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
@@ -178,7 +180,13 @@ footer p { margin: 0; }
     <h2 id="prooftitle">Why people are here</h2>
     <ul class="facts">
       <li><b id="fTotal">311</b><span>people in the directory</span></li>
-      <li><b>85,000</b><span>views on Farah's Quora answers</span></li>
+    </ul>
+    <p class="kicker">Farah's Quora answers, all time</p>
+    <ul class="facts quora">
+      <li><b>86,037</b><span>views</span></li>
+      <li><b>1,624</b><span>upvotes</span></li>
+      <li><b>1,489</b><span>comments</span></li>
+      <li><b>449</b><span>follows</span></li>
     </ul>
     <p>Those Quora answers brought people into Skills Economy until the accounts were removed. The people did not go away, so they are listed here now.</p>
   </section>
