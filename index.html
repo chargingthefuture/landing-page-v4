@@ -97,8 +97,11 @@ footer p { margin: 0; }
 @media (max-width: 420px) { .facts b { font-size: 1.3rem; } }
 </style>
 <style>
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--hair); background: var(--paper); color: var(--ink); font: 500 .82rem var(--sans); border-radius: 999px; padding: 6px 11px; cursor: pointer; min-height: 34px; }
+/* Two rows that scroll sideways, so the list never takes over the screen. */
+.chips { display: grid; gap: 6px; justify-content: start; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%); }
+.crow { display: flex; gap: 6px; width: max-content; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { border: 1px solid var(--hair); background: var(--paper); color: var(--ink); font: 500 .82rem var(--sans); border-radius: 999px; padding: 6px 11px; cursor: pointer; min-height: 34px; white-space: nowrap; }
 .chip b { font: 500 .82rem var(--mono); color: var(--brass); margin-left: 4px; }
 .chip[aria-pressed="true"] { background: var(--forest); color: var(--on-forest); border-color: var(--forest); }
 .chip[aria-pressed="true"] b { color: var(--on-forest); }
@@ -217,7 +220,11 @@ footer p { margin: 0; }
   people.forEach((row, t) => row.forEach((n, j) => { if (n) listed.push({ t, j, n }); }));
   listed.sort((a, b) => b.n - a.n);
   const chipsEl = document.getElementById('chips');
-  chipsEl.innerHTML = listed.map((x, i) => `<button type="button" class="chip" data-i="${i}" aria-pressed="false">${esc(SECTORS[x.t][1][x.j])}<b>${fmt(x.n)}</b></button>`).join('');
+  const chipHtml = (x, i) => `<button type="button" class="chip" data-i="${i}" aria-pressed="false">${esc(SECTORS[x.t][1][x.j])}<b>${fmt(x.n)}</b></button>`;
+  // Two rows: busiest first, read top then bottom, left to right.
+  const rows = [[], []];
+  listed.forEach((x, i) => rows[i % 2].push(chipHtml(x, i)));
+  chipsEl.innerHTML = rows.map(r => `<div class="crow">${r.join('')}</div>`).join('');
   chipsEl.addEventListener('click', (ev) => {
     const b = ev.target.closest('.chip'); if (!b) return;
     const x = listed[Number(b.dataset.i)];
@@ -236,6 +243,8 @@ footer p { margin: 0; }
       ? 'Their names stay private until you ask for an introduction.'
       : 'Farah can still look across the directory for someone close, through One Percent below.';
     chipsEl.querySelectorAll('.chip').forEach(c => { const x = listed[Number(c.dataset.i)]; c.setAttribute('aria-pressed', String(x.t === t && x.j === j)); });
+    const on = chipsEl.querySelector('.chip[aria-pressed="true"]');
+    if (on && (on.offsetLeft < chipsEl.scrollLeft || on.offsetLeft + on.offsetWidth > chipsEl.scrollLeft + chipsEl.clientWidth)) chipsEl.scrollTo({ left: on.offsetLeft - chipsEl.offsetLeft, behavior: 'smooth' });
     highlight(t, j);
   }
   function pick(t, j) { sectorSel.value = String(t); fillTitles(j); answer(); }
