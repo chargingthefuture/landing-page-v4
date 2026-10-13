@@ -26,6 +26,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('counts: reading directory_public_skill_counts failed:', err?.message);
-    return res.status(502).json({ error: 'Counts could not be read from the database.' });
+    return res.status(502).json({ error: 'Counts could not be read from the database.', code: err?.code || null });
   }
 }

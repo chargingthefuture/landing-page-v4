@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Could not make a new code. Try saving again.' });
     } catch (err) {
       console.error('match: saving failed:', err?.message);
-      return res.status(502).json({ error: 'The match could not be saved. Try again in a minute.' });
+      return res.status(502).json({ error: 'The match could not be saved. Try again in a minute.', code: err?.code || null });
     }
   }
 
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       console.error('match: lookup failed:', err?.message);
-      return res.status(502).json({ error: 'The saved match could not be read. Try again in a minute.' });
+      return res.status(502).json({ error: 'The saved match could not be read. Try again in a minute.', code: err?.code || null });
     }
   }
 

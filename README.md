@@ -24,3 +24,16 @@ directory match them, then chooses the free Goals board or the paid One Percent 
   counts".
 - "Advocates / Awareness Raisers" is a real skill, given from a person's activity on Quora and
   replaced once they join or reply. It sits behind the "Someone to speak up for me" need.
+
+## When /api/counts says the database could not be read
+
+The reply carries Postgres's short error code (never the message text). The common ones:
+
+| Code | Meaning | Fix |
+|---|---|---|
+| `28P01` | Wrong password for `landing_page` | Re-copy the password into `DATABASE_URL` in Vercel, then redeploy |
+| `28000` | The login does not exist or cannot log in | Run `CREATE ROLE landing_page ...` from the main repo's `ctf/scripts/sql/landing_page_login_grants.sql` |
+| `3D000` | Wrong database name at the end of the address | Use the name Neon's Connect panel shows |
+| `42501` | The login lacks permission | Run the `GRANT` lines from the same file |
+| `42P01` / `42883` | A view or the match count is missing | The main repo's database update has not run; rerun "Neon — Update DB" |
+| `null` | Not a database error (address unreadable, network) | Check `DATABASE_URL` is a full `postgresql://` address |
