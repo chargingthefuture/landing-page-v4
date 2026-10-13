@@ -3,7 +3,11 @@
 One page: a blog reader taps what they need and sees how many people in the Skills Economy
 directory match them, then chooses the free Goals board or the paid One Percent introduction.
 
-- `index.html` is the page. No build step; Vercel serves it as is.
+- `index.html` is the match page at `/`. `app.html` and `src/` are the earlier site (moved from
+  `landing-page-v3-deprecated`): The Schemes, Look Ma, Demos, Commons, Chat and Classic keep their
+  old addresses because blog posts link to them. `vercel.json` sends any address without a file
+  extension (other than `/` and `/api/...`) to `app.html`. `npm run build` (Vite) builds both
+  pages into `dist`.
 - A visitor taps what they need (the `NEEDS` list in `index.html` maps each need to job titles) and
   is told how many people match them, each counted once.
 - `api/counts.js` returns live counts per job title, `api/count.js` counts the people matching a
