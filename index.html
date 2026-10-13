@@ -419,7 +419,7 @@ function boot(DATA, live) {
   }
   // Live counts are exact. The baked-in fallback only knows the largest single title (5 or more), so
   // it reads as a floor.
-  const shown = (n, exact) => exact ? fmt(n || 0) : (n ? `${fmt(n)}+` : 'Fewer than 5');
+  const shown = (n, exact) => exact ? fmt(n || 0) : (n ? `${fmt(n)}+` : '—');
 
   // Without live counts there is no way to count a person once across titles, so the page shows the
   // largest single title: a floor, never an overcount.
@@ -464,13 +464,18 @@ function boot(DATA, live) {
       for (const x of g) by[x.key] = bakedCount(x.recs);
     }
     lastTotal = total;
-    big.textContent = shown(total, once);
-    big.classList.toggle('few', !once && !total);
-    say.textContent = total === 1 ? 'person in the directory matches what you need.' : total ? 'people in the directory match what you need.' : 'people in the directory match what you need so far.';
+    // The baked-in fallback has no number for a small group, so it says so in words rather than guess.
+    const unknown = !once && !total;
+    big.textContent = unknown ? '' : shown(total, once);
+    big.hidden = unknown;
+    big.classList.remove('few');
+    say.textContent = unknown ? 'Farah is still adding people for this.' : total === 1 ? 'person in the directory matches what you need.' : total ? 'people in the directory match what you need.' : 'people in the directory match what you need so far.';
     split.innerHTML = g.length > 1 ? g.map(x => `<li><span>${esc(x.label)}</span><b>${shown(by[x.key], once)}</b></li>`).join('') : '';
     also.textContent = total
       ? (once ? 'Each person is counted once, even when they can help with more than one thing. ' : '') + 'Their names stay private until you ask for an introduction.'
-      : 'Farah adds people most days. Save this to come back and see who is new, or ask Farah through One Percent below.';
+      : once
+        ? 'Farah adds people most days. Save this to come back and see who is new, or ask Farah through One Percent below.'
+        : 'Farah adds people most days. Ask Farah through One Percent below to look for someone close.';
     document.getElementById('save').hidden = !once;
   }
 
@@ -545,7 +550,7 @@ function boot(DATA, live) {
     el('polygon', { points: pts(h), fill: `rgb(${v - 4},${v + 7},${v + 1})` }, land);
     el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (n ? b * .7 : 0).toFixed(2) }, glowL);
     const face = el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (b * .9).toFixed(2), class: 'hex', tabindex: 0, role: 'button',
-      'aria-label': `${SECTORS[h.t][1][h.j]}: ${live || n ? fmt(n) : 'fewer than 5'} people` }, faces);
+      'aria-label': `${SECTORS[h.t][1][h.j]}: ${live || n ? `${fmt(n)} people` : 'no count yet'}` }, faces);
     const go = () => { pick(h.t, h.j); document.querySelector('.tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     face.addEventListener('click', go);
     face.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
