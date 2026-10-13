@@ -1,6 +1,6 @@
-// POST /api/match { jobTitleId } — saves a match and returns its code.
-// GET  /api/match?code=ABCDE-FGHJK — returns the saved match with today's count beside the count when saved.
-// A saved match holds the code, the job title and the count; never a name, contact detail or IP address.
+// POST /api/match { jobTitleIds } — saves what a visitor needs, as job titles, and returns its code.
+// GET  /api/match?code=ABCDE-FGHJK — returns the saved titles with today's match count beside the count when saved.
+// A saved match holds the code, the job titles and the count; never a name, contact detail or IP address.
 import { randomInt } from 'node:crypto';
 import { neon } from '@neondatabase/serverless';
 
@@ -32,18 +32,22 @@ export default async function handler(req, res) {
   const sql = neon(process.env.DATABASE_URL);
 
   if (req.method === 'POST') {
-    const jobTitleId = String(readBody(req).jobTitleId || '').slice(0, 64);
-    if (!jobTitleId) return res.status(400).json({ error: 'Pick a skill before saving.' });
+    const asked = (Array.isArray(readBody(req).jobTitleIds) ? readBody(req).jobTitleIds : [])
+      .map((x) => String(x).slice(0, 64)).filter(Boolean).slice(0, 60);
+    if (!asked.length) return res.status(400).json({ error: 'Pick what you need before saving.' });
     try {
-      const found = await sql`SELECT people FROM directory_public_skill_counts WHERE job_title_id = ${jobTitleId}`;
-      if (!found.length) return res.status(400).json({ error: 'That skill is not in the list. Pick one from the list and save again.' });
+      // Keep only titles that are in the list, in the order they were sent.
+      const known = new Set((await sql`SELECT job_title_id FROM directory_public_skill_counts WHERE job_title_id = ANY (${asked}::text[])`).map((r) => r.job_title_id));
+      const ids = [...new Set(asked.filter((id) => known.has(id)))];
+      if (!ids.length) return res.status(400).json({ error: 'None of those needs are in the list. Pick again and save.' });
+      const count = (await sql`SELECT directory_public_match_count(${ids}::text[]) AS n`)[0]?.n ?? null;
       // A code collision is very unlikely; try a few times rather than fail.
       for (let attempt = 0; attempt < 4; attempt++) {
         const code = makeCode();
-        const saved = await sql`INSERT INTO directory_landing_match_codes (code, job_title_id, people_at_save)
-                                VALUES (${code}, ${jobTitleId}, ${found[0].people})
+        const saved = await sql`INSERT INTO directory_landing_match_codes (code, job_title_id, job_title_ids, people_at_save)
+                                VALUES (${code}, ${ids[0]}, ${ids}::text[], ${count})
                                 ON CONFLICT (code) DO NOTHING RETURNING code`;
-        if (saved.length) return res.status(201).json({ code });
+        if (saved.length) return res.status(201).json({ code, people: count });
       }
       return res.status(500).json({ error: 'Could not make a new code. Try saving again.' });
     } catch (err) {
@@ -56,16 +60,16 @@ export default async function handler(req, res) {
     const code = normalizeCode(req.query?.code);
     if (!code) return res.status(400).json({ error: 'A code is 10 letters and numbers, like ABCDE-FGHJK.' });
     try {
-      const rows = await sql`SELECT c.job_title_id, c.people_at_save, c.created_at, v.sector, v.title, v.people, v.seekers
-                               FROM directory_landing_match_codes c
-                               JOIN directory_public_skill_counts v ON v.job_title_id = c.job_title_id
-                              WHERE c.code = ${code}`;
+      const rows = await sql`SELECT COALESCE(job_title_ids, ARRAY[job_title_id]) AS ids, people_at_save, created_at
+                               FROM directory_landing_match_codes WHERE code = ${code}`;
       if (!rows.length) return res.status(404).json({ error: 'No saved match has that code. Check the letters, or save a new match.' });
-      await sql`UPDATE directory_landing_match_codes SET last_seen_at = NOW() WHERE code = ${code}`;
       const r = rows[0];
+      const [now] = await Promise.all([
+        sql`SELECT directory_public_match_count(${r.ids}::text[]) AS n`,
+        sql`UPDATE directory_landing_match_codes SET last_seen_at = NOW() WHERE code = ${code}`,
+      ]);
       return res.status(200).json({
-        code, jobTitleId: r.job_title_id, sector: r.sector, title: r.title,
-        people: r.people, peopleAtSave: r.people_at_save, seekers: r.seekers, savedAt: r.created_at,
+        code, jobTitleIds: r.ids, people: now[0]?.n ?? null, peopleAtSave: r.people_at_save, savedAt: r.created_at,
       });
     } catch (err) {
       console.error('match: lookup failed:', err?.message);

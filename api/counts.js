@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   try {
     const sql = neon(process.env.DATABASE_URL);
     const [titles, totals] = await Promise.all([
-      sql`SELECT job_title_id, sector, title, people, seekers
+      sql`SELECT job_title_id, sector, title, people
             FROM directory_public_skill_counts
            ORDER BY sector_order, sector, title_order, title`,
       sql`SELECT total FROM directory_public_totals`,
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
     return res.status(200).json({
       total: totals[0]?.total ?? 0,
-      titles: titles.map((r) => ({ id: r.job_title_id, sector: r.sector, title: r.title, people: r.people, seekers: r.seekers })),
+      titles: titles.map((r) => ({ id: r.job_title_id, sector: r.sector, title: r.title, people: r.people })),
     });
   } catch (err) {
     console.error('counts: reading directory_public_skill_counts failed:', err?.message);
