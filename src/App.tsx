@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { InviteStrip } from "@/components/InviteStrip";
 import { Switch, Route, Router as WouterRouter, Link, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -1837,10 +1837,20 @@ function HubLandingPage() {
   );
 }
 
+// "/" belongs to the match page (index.html), not to this app. A Home link or the logo inside this
+// app changes the route without asking the server, so it would show this app's old home page;
+// a full page load instead lets the server hand back the match page.
+function HomeOnMatchPage() {
+  useEffect(() => {
+    window.location.replace("/");
+  }, []);
+  return null;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={HubLandingPage} />
+      <Route path="/" component={HomeOnMatchPage} />
       <Route path="/classic" component={LandingPage} />
       <Route path="/commons" component={HubLandingPage} />
       <Route path="/chat" component={ChatLandingPage} />
