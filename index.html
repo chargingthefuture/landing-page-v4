@@ -372,7 +372,9 @@ function boot(DATA, live) {
     for (const name of extra) { const r = byName.get(name); if (r) g.push({ key: 'skill:' + name, label: name, recs: [r] }); }
     return g;
   }
-  const plus = (n) => n ? `${fmt(n)}+` : 'Fewer than 5';
+  // Live counts are exact. The baked-in fallback only knows the largest single title (5 or more), so
+  // it reads as a floor.
+  const shown = (n, exact) => exact ? fmt(n || 0) : (n ? `${fmt(n)}+` : 'Fewer than 5');
 
   // Without live counts there is no way to count a person once across titles, so the page shows the
   // largest single title: a floor, never an overcount.
@@ -417,10 +419,10 @@ function boot(DATA, live) {
       for (const x of g) by[x.key] = bakedCount(x.recs);
     }
     lastTotal = total;
-    big.textContent = total ? `${fmt(total)}+` : 'Fewer than 5';
-    big.classList.toggle('few', !total);
-    say.textContent = total ? 'people in the directory match what you need.' : 'people in the directory match what you need so far.';
-    split.innerHTML = g.length > 1 ? g.map(x => `<li><span>${esc(x.label)}</span><b>${plus(by[x.key])}</b></li>`).join('') : '';
+    big.textContent = shown(total, once);
+    big.classList.toggle('few', !once && !total);
+    say.textContent = total === 1 ? 'person in the directory matches what you need.' : total ? 'people in the directory match what you need.' : 'people in the directory match what you need so far.';
+    split.innerHTML = g.length > 1 ? g.map(x => `<li><span>${esc(x.label)}</span><b>${shown(by[x.key], once)}</b></li>`).join('') : '';
     also.textContent = total
       ? (once ? 'Each person is counted once, even when they can help with more than one thing. ' : '') + 'Their names stay private until you ask for an introduction.'
       : 'Farah adds people most days. Save this to come back and see who is new, or ask Farah through One Percent below.';
@@ -498,7 +500,7 @@ function boot(DATA, live) {
     el('polygon', { points: pts(h), fill: `rgb(${v - 4},${v + 7},${v + 1})` }, land);
     el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (n ? b * .7 : 0).toFixed(2) }, glowL);
     const face = el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (b * .9).toFixed(2), class: 'hex', tabindex: 0, role: 'button',
-      'aria-label': `${SECTORS[h.t][1][h.j]}: ${n ? fmt(n) : 'fewer than 5'} people` }, faces);
+      'aria-label': `${SECTORS[h.t][1][h.j]}: ${live || n ? fmt(n) : 'fewer than 5'} people` }, faces);
     const go = () => { pick(h.t, h.j); document.querySelector('.tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     face.addEventListener('click', go);
     face.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
@@ -575,9 +577,11 @@ function boot(DATA, live) {
       await recount();
       const then = body.peopleAtSave, now = body.people, saved = dateFmt.format(new Date(body.savedAt));
       let line;
-      if (now && then) line = now > then ? `About ${fmt(now - then)} more people match you than when you saved this on ${saved}. ${fmt(now)}+ in all.` : `No one new yet since ${saved}. ${fmt(now)}+ people match you. Farah adds people most days.`;
-      else if (now) line = `${fmt(now)}+ people match you now. When you saved this on ${saved} there were fewer than 5.`;
-      else line = `Still fewer than 5 people match you. Farah adds people most days; check back, or ask Farah through One Percent.`;
+      const ppl = (n) => `${fmt(n)} ${n === 1 ? 'person' : 'people'}`;
+      const more = now - (then || 0);
+      if (more > 0) line = `${fmt(more)} more ${more === 1 ? 'person matches' : 'people match'} you than when you saved this on ${saved}. ${ppl(now)} in all.`;
+      else if (now) line = `No one new yet since ${saved}. ${ppl(now)} match you. Farah adds people most days.`;
+      else line = `No one matches you yet. Farah adds people most days; check back, or ask Farah through One Percent.`;
       backres.innerHTML = `<p class="since">${esc(line)}</p>`;
     } catch (err) {
       backres.innerHTML = quiet ? '' : `<p class="msg">${esc(err.message)}</p>`;

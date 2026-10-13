@@ -14,8 +14,9 @@ directory match them, then chooses the free Goals board or the paid One Percent 
 - Without `DATABASE_URL`, or if the database cannot be reached, the page shows the counts baked into
   `index.html` (the `BAKED` list, from 2026-10-13), shows the largest single count as a floor
   (it cannot count a person once without the database), and hides saving.
-- A group of fewer than 5 people shows no number, and the live count rounds down to a multiple of
-  5, so nobody can be picked out. The rules for these counts are in the main repo's `CLAUDE.md`, under "Public skill
+- Live counts are exact, small ones included: no name or location is attached to a count. The
+  baked-in counts were taken when groups under 5 were left blank, so the fallback still says
+  "Fewer than 5" for those. The rules for these counts are in the main repo's `CLAUDE.md`, under "Public skill
   counts".
 - "Advocates / Awareness Raisers" is a real skill, given from a person's activity on Quora and
   replaced once they join or reply. It sits behind the "Someone to speak up for me" need.
