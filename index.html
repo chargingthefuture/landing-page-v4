@@ -154,6 +154,7 @@ footer p { margin: 0; }
     <h2 id="prooftitle">Why people are here</h2>
     <ul class="facts">
       <li><b>311</b><span>people in the directory</span></li>
+      <li><b>305</b><span>of them list what they do</span></li>
       <li><b>85,000</b><span>views on Farah's Quora answers</span></li>
     </ul>
     <p>Those Quora answers brought people into Skills Economy until the accounts were removed. The people did not go away, so they are listed here now.</p>
@@ -173,7 +174,9 @@ footer p { margin: 0; }
 <script>
 (() => {
   // Real counts from the directory, 2026-10-13. A number appears only where 5 or more people list the skill.
-  // Advocates / Awareness Raisers is left out: it is the placeholder title for people added from Quora who listed no skill.
+  // Advocates / Awareness Raisers is a real skill, given from a person's activity on Quora; Farah adds or replaces it when they
+  // join or reply. It stays on the page, but the page never opens on it: an advocate is not who gets somebody food, housing,
+  // a job, health care or a babysitter.
   const DATA = [
     ['Food & Agriculture', [['Farmers'], ['Agronomists'], ['Livestock Veterinarians'], ['Food-Processing Workers', 5], ['Agribusiness Managers']]],
     ['Water & Sanitation', [['Water Engineers'], ['Treatment-Plant Operators'], ['Plumbers'], ['Distribution Technicians']]],
@@ -191,7 +194,7 @@ footer p { margin: 0; }
     ['Retail & Services', [['Shop Staff / Cashiers', 5], ['Supply Managers'], ['Cleaners / Janitorial'], ['Personal Services (hairdressers, repair)', 5]]],
     ['Professional & Business Services', [['Financial Analysts / Accountants'], ['Lawyers / Legal Consultants'], ['Management Consultants'], ['Marketing Specialists'], ['Human Resources Professionals / HR Generalists'], ['Ethics Officers / Compliance Officers'], ['Business Analysts'], ['Project Managers'], ['Administrative & Office Support', 7]]],
     ['R&D & High-Tech', [['Web Developers'], ['Research Scientists'], ['Lab Technicians'], ['Software Engineers / Developers', 5], ['Systems / Hardware Engineers'], ['Product Managers'], ['UX/UI Designers'], ['Data Scientists / ML Engineers'], ['Quality Assurance / Test Engineers'], ['Tech Support / DevOps']]],
-    ['Creative & Media', [['Performing Artists (dancers, models)'], ['Game Designers / Developers'], ['Authors / Fiction Writers'], ['Graphic / Visual Designers'], ['Journalists / Reporters'], ['Producers / Content Creators'], ['Copywriters / Editors'], ['Photographers / Videographers'], ['Social Media Managers'], ['Artists / Illustrators'], ['PR & Communications Specialists'], ['Musicians / Composers', 9], ['Apparel / Fashion Designers']]],
+    ['Creative & Media', [['Performing Artists (dancers, models)'], ['Advocates / Awareness Raisers', 206], ['Game Designers / Developers'], ['Authors / Fiction Writers'], ['Graphic / Visual Designers'], ['Journalists / Reporters'], ['Producers / Content Creators'], ['Copywriters / Editors'], ['Photographers / Videographers'], ['Social Media Managers'], ['Artists / Illustrators'], ['PR & Communications Specialists'], ['Musicians / Composers', 9], ['Apparel / Fashion Designers']]],
     ['Environmental & Waste Management', [['Environmental Engineers'], ['Conservation Officers / Ecologists'], ['Waste-Collection Crews'], ['Recycling Technicians / Plant Operators'], ['Hazardous Waste Specialists'], ['Environmental Compliance Officers'], ['Waste Policy & Planning Analysts'], ['Composting & Organic Waste Managers']]],
     ['Microfinance & SME Support', [['Microfinance Officers / Loan Officers'], ['Business Development Officers / SME Advisors'], ['Cooperative Managers'], ['Credit Analysts'], ['Financial Literacy Trainers'], ['Microinsurance & Risk Officers'], ['SME Finance Platform Operators'], ['Market Linkage / Trade Facilitators']]],
     ['Emergency & Reserve Roles', [['Disaster-Response Specialists'], ['Emergency Planners'], ['Reserve Medical Teams'], ['Temporary Shelter & Logistics Staff'], ['Search & Rescue Teams'], ['Emergency Communications Officers'], ['Volunteer Coordination Officers']]],
@@ -327,8 +330,9 @@ footer p { margin: 0; }
     ring.setAttribute('cx', h.x); ring.setAttribute('cy', h.y);
   }
 
-  // Open on the busiest skill, so the first view shows a real match.
-  pick(listed[0].t, listed[0].j);
+  // Open on the busiest skill that meets a daily need, so the first view shows a real match.
+  const first = listed.find(x => SECTORS[x.t][1][x.j] !== 'Advocates / Awareness Raisers');
+  pick(first.t, first.j);
 })();
 </script>
 </body>
