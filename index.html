@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="See how many people in the Skills Economy directory could help with the skill you need. No account, no name.">
+<title>Skill Match Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+/* Layout: one ivory column. The match tool sits above the fold; proof, next steps and the night globe follow. */
+:root {
+  --paper: #f4efe4; --sunk: #ebe3d3; --card: #fffbf3; --field: #fffdf8;
+  --ink: #18261f; --soft: #5d6a62; --hair: #e2d8c4;
+  --brass: #9c7631; --forest: #1f3a2e; --on-forest: #f3ecda;
+  --ring: rgba(156,118,49,.28);
+  --night: #0f1512; --night-ink: #efe7d6; --night-soft: #a7b1a8; --night-sea-hi: #18241e; --night-sea-lo: #0a0f0c; --night-grid: #2f4238;
+  --glow: #8fd3a9; --pick: #f2c46d;
+  --serif: Newsreader, Georgia, serif; --sans: "DM Sans", ui-sans-serif, system-ui, sans-serif; --mono: "DM Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #111915; --sunk: #0b110e; --card: #18221d; --field: #141d18;
+  --ink: #efe7d6; --soft: #a7b1a8; --hair: #2a3730;
+  --brass: #d6b06c; --forest: #ece2cb; --on-forest: #13201a;
+  --ring: rgba(214,176,108,.3); color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --paper: #111915; --sunk: #0b110e; --card: #18221d; --field: #141d18;
+  --ink: #efe7d6; --soft: #a7b1a8; --hair: #2a3730;
+  --brass: #d6b06c; --forest: #ece2cb; --on-forest: #13201a;
+  --ring: rgba(214,176,108,.3); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--sunk); color: var(--ink); font: 400 16px/1.5 var(--sans); }
+.wrap { max-width: 640px; margin: 0 auto; background: var(--paper); padding-inline: 20px; padding-block: 18px 56px; display: grid; gap: 28px; min-height: 100vh; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .85rem; }
+.top a { color: var(--soft); text-decoration: none; }
+.sample { font: 600 .68rem/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--brass); border: 1px dashed var(--brass); border-radius: 999px; padding: 5px 9px; }
+
+.hero { display: grid; gap: 10px; }
+.eyebrow { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
+h1 { margin: 0; font: 500 clamp(2rem, 8vw, 2.8rem)/1.05 var(--serif); letter-spacing: -.015em; text-wrap: balance; }
+h2 { margin: 0; font: 500 1.4rem/1.15 var(--serif); text-wrap: balance; }
+.lede { margin: 0; color: var(--soft); font-size: 1.05rem; max-width: 40ch; }
+
+/* Match tool */
+.tool { background: var(--card); border: 1px solid var(--hair); border-radius: 16px; padding: 16px; display: grid; gap: 14px; }
+.mode { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--hair); border-radius: 12px; padding: 4px; background: var(--paper); gap: 4px; }
+.mode button { border: 0; background: transparent; color: var(--soft); font: 600 .92rem var(--sans); padding: 10px 8px; border-radius: 9px; cursor: pointer; min-height: 44px; }
+.mode button[aria-pressed="true"] { background: var(--forest); color: var(--on-forest); }
+.row { display: grid; gap: 6px; min-width: 0; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+label { font: 600 .86rem var(--sans); }
+select, input[type="text"] { width: 100%; font: 400 1rem var(--sans); color: var(--ink); background: var(--field); border: 1px solid var(--hair); border-radius: 10px; min-height: 46px; padding: 8px 12px; }
+.answer { border-top: 1px solid var(--hair); padding-top: 14px; display: grid; gap: 6px; }
+.big { margin: 0; font: 500 clamp(2.6rem, 12vw, 3.6rem)/1 var(--serif); color: var(--forest); font-variant-numeric: tabular-nums; }
+.big.few { font-size: clamp(1.6rem, 7vw, 2rem); }
+.say { margin: 0; font: 500 1.15rem/1.3 var(--serif); text-wrap: balance; }
+.also { margin: 0; color: var(--soft); font-size: .92rem; }
+.private { margin: 0; font-size: .85rem; color: var(--soft); display: flex; gap: 8px; align-items: baseline; }
+.private b { color: var(--ink); font-weight: 600; }
+
+.btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--forest); background: var(--forest); color: var(--on-forest); font: 600 .95rem var(--sans); border-radius: 12px; min-height: 46px; padding: 10px 16px; cursor: pointer; text-align: center; }
+.btn.ghost { background: transparent; color: var(--forest); }
+.btn:focus-visible, select:focus-visible, input:focus-visible, .mode button:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+/* Proof */
+.proof { display: grid; gap: 10px; }
+.facts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.facts li { border-top: 2px solid var(--forest); padding-top: 8px; display: grid; gap: 4px; min-width: 0; }
+.facts b { font: 500 1.6rem/1 var(--serif); font-variant-numeric: tabular-nums; }
+.facts span { font-size: .8rem; color: var(--soft); line-height: 1.3; }
+.proof p { margin: 0; font-size: .95rem; }
+
+/* Two doors */
+.doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.door { background: var(--card); border: 1px solid var(--hair); border-radius: 16px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.door h3 { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--brass); }
+.door .price { margin: 0; font: 500 1.6rem/1 var(--serif); color: var(--forest); }
+.door p { margin: 0; font-size: .94rem; }
+.door .fine { color: var(--soft); font-size: .85rem; }
+
+/* Night globe */
+.night { background: var(--night); color: var(--night-ink); border-radius: 18px; padding: 14px; display: grid; gap: 10px; }
+.night h2 { color: var(--night-ink); }
+.night p { margin: 0; color: var(--night-soft); font-size: .85rem; }
+svg.map { width: 100%; height: auto; display: block; touch-action: manipulation; }
+svg.map .hex { cursor: pointer; }
+svg.map .hex:focus-visible { outline: none; stroke: var(--night-ink); stroke-width: 2; }
+
+footer { font-size: .8rem; color: var(--soft); }
+footer p { margin: 0; }
+@keyframes pulse { 0% { r: 8; opacity: .9 } 100% { r: 24; opacity: 0 } }
+.pulse { animation: pulse 1.8s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+@media (max-width: 420px) { .facts b { font-size: 1.3rem; } }
+</style>
+<style>
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--hair); background: var(--paper); color: var(--ink); font: 500 .82rem var(--sans); border-radius: 999px; padding: 6px 11px; cursor: pointer; min-height: 34px; }
+.chip b { font: 500 .82rem var(--mono); color: var(--brass); margin-left: 4px; }
+.chip[aria-pressed="true"] { background: var(--forest); color: var(--on-forest); border-color: var(--forest); }
+.chip[aria-pressed="true"] b { color: var(--on-forest); }
+.chip:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+.kicker { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <a href="https://farahbrunache.com">&larr; Back to the blog</a>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">Skills Economy</p>
+    <h1>See who could help you. No account, no name.</h1>
+    <p class="lede"><span id="heroCount">311</span> people are listed in the Skills Economy directory. Pick a skill and see how many could help.</p>
+  </header>
+
+  <section class="tool" aria-labelledby="tooltitle">
+    <h2 id="tooltitle" class="vh">Find your matches</h2>
+    <p class="kicker">Most listed</p>
+    <div class="chips" id="chips" role="group" aria-label="Skills with the most people"></div>
+    <div class="pair">
+      <div class="row"><label for="sector">Kind of work</label><select id="sector"></select></div>
+      <div class="row"><label for="title">Skill</label><select id="title"></select></div>
+    </div>
+    <div class="answer" aria-live="polite">
+      <p class="big" id="big">0</p>
+      <p class="say" id="say"></p>
+      <p class="also" id="also"></p>
+    </div>
+    <p class="private"><b>Private.</b> Nobody sees who you are, and you never see who they are, until somebody asks for an introduction.</p>
+  </section>
+
+  <section class="doors" aria-label="Meet them">
+    <div class="door">
+      <h3>Free · Skills Economy</h3>
+      <p>Join and meet them yourself. Post what you need on the Goals board, where any member can pick up a small part of it.</p>
+      <p class="fine">A person checks each new member before they can use the app. That can take a few days.</p>
+      <a class="btn ghost" href="https://app.chargingthefuture.com/apps/peer-programming?tab=goals">Open the Goals board</a>
+    </div>
+    <div class="door">
+      <h3>Paid · One Percent</h3>
+      <p class="price">$7</p>
+      <p>Farah looks at your match and introduces you by name to the people who fit. You skip the wait.</p>
+      <a class="btn" href="https://farahbrunache.com/buy" id="book">Book an introduction</a>
+    </div>
+  </section>
+
+  <section class="proof" aria-labelledby="prooftitle">
+    <h2 id="prooftitle">Why people are here</h2>
+    <ul class="facts">
+      <li><b>311</b><span>people in the directory</span></li>
+      <li><b>85,000</b><span>views on Farah's Quora answers</span></li>
+    </ul>
+    <p>Those Quora answers brought people into Skills Economy until the accounts were removed. The people did not go away, so they are listed here now.</p>
+  </section>
+
+  <section class="night" aria-labelledby="maptitle">
+    <h2 id="maptitle">Every skill, one hexagon each</h2>
+    <p>Brighter means more people can help. Tap one to check it. The globe has no countries on it, because nobody here is pinned to a place.</p>
+    <svg class="map" id="map" viewBox="-282 -282 564 564" role="group" aria-label="A globe of skills. Each hexagon is one skill, brighter where more people can help."></svg>
+  </section>
+
+  <footer>
+    <p>Counts come from the Skills Economy directory on October 13, 2026. A skill with fewer than 5 people shows no number, so nobody can be picked out.</p>
+  </footer>
+</main>
+
+<script>
+(() => {
+  // Real counts from the directory, 2026-10-13. A number appears only where 5 or more people list the skill.
+  // Advocates / Awareness Raisers is left out: it is the placeholder title for people added from Quora who listed no skill.
+  const DATA = [
+    ['Food & Agriculture', [['Farmers'], ['Agronomists'], ['Livestock Veterinarians'], ['Food-Processing Workers', 5], ['Agribusiness Managers']]],
+    ['Water & Sanitation', [['Water Engineers'], ['Treatment-Plant Operators'], ['Plumbers'], ['Distribution Technicians']]],
+    ['Energy & Utilities', [['Power-Plant Operators'], ['Electrical Engineers'], ['Renewable Technicians'], ['Grid Operators'], ['Maintenance Crews']]],
+    ['Health', [['Medical Assistants'], ['Home Health Aides / Caregivers'], ['General Practitioners'], ['Specialists (e.g., cardiology, pediatrics)'], ['Nurses', 10], ['Midwives'], ['Pharmacists'], ['Laboratory Technicians'], ['Radiographers'], ['Community-Health Workers', 7], ['EMS / Paramedics'], ['Mental Health Counselors'], ['Psychologists', 8], ['Social Workers', 6], ['Therapists']]],
+    ['Housing & Construction', [['Property Managers'], ['Civil Engineers'], ['Architects'], ['Construction Laborers', 7], ['Electricians'], ['Plumbers (construction)'], ['HVAC / Insulation Technicians'], ['Masons']]],
+    ['Transport & Logistics', [['Truck Drivers', 7], ['Delivery Drivers / Couriers', 6], ['Package Handlers / Warehouse Workers', 6], ['Bus/Train Operators'], ['Mechanics'], ['Logistics Planners'], ['Port/Airport Staff'], ['Traffic Engineers']]],
+    ['Telecommunications & IT', [['Network Engineers'], ['IT Support Technicians'], ['Data-Center Technicians'], ['Software Developers', 5], ['Cybersecurity Specialists'], ['Telecom Field Technicians'], ['IT Security Specialists']]],
+    ['Education', [['Physical Education Teachers'], ['Swimming Instructors / Sports Coaches'], ['Tutors'], ['Childcare Workers'], ['Primary School Teachers'], ['Secondary School Teachers'], ['Early-Childhood Educators'], ['School Administrators'], ['Vocational Trainers'], ['University Faculty'], ['Education Support Staff']]],
+    ['Public Safety & Justice', [['Police Officers'], ['Firefighters'], ['Judges'], ['Lawyers'], ['Corrections Officers'], ['Forensic Staff']]],
+    ['Finance & Public Administration', [['Accountants'], ['Bankers'], ['Financial Advisors'], ['Tax Officers'], ['Civil Servants (general)'], ['Regulators'], ['Economists / Analysts'], ['Procurement Officers'], ['Community Development Officers', 10]]],
+    ['Manufacturing & Industry', [['Production Workers'], ['Plant Managers'], ['Quality Inspectors'], ['Maintenance Engineers', 6], ['Process Operators'], ['Machinists']]],
+    ['Mining / Extractive', [['Geologists'], ['Mining Engineers'], ['Safety Officers'], ['Technicians']]],
+    ['Tourism & Hospitality', [['Hotel Staff (front desk, housekeeping)', 5], ['Chefs / Cooks'], ['Tour Guides'], ['Travel Agents'], ['Event Staff']]],
+    ['Retail & Services', [['Shop Staff / Cashiers', 5], ['Supply Managers'], ['Cleaners / Janitorial'], ['Personal Services (hairdressers, repair)', 5]]],
+    ['Professional & Business Services', [['Financial Analysts / Accountants'], ['Lawyers / Legal Consultants'], ['Management Consultants'], ['Marketing Specialists'], ['Human Resources Professionals / HR Generalists'], ['Ethics Officers / Compliance Officers'], ['Business Analysts'], ['Project Managers'], ['Administrative & Office Support', 7]]],
+    ['R&D & High-Tech', [['Web Developers'], ['Research Scientists'], ['Lab Technicians'], ['Software Engineers / Developers', 5], ['Systems / Hardware Engineers'], ['Product Managers'], ['UX/UI Designers'], ['Data Scientists / ML Engineers'], ['Quality Assurance / Test Engineers'], ['Tech Support / DevOps']]],
+    ['Creative & Media', [['Performing Artists (dancers, models)'], ['Game Designers / Developers'], ['Authors / Fiction Writers'], ['Graphic / Visual Designers'], ['Journalists / Reporters'], ['Producers / Content Creators'], ['Copywriters / Editors'], ['Photographers / Videographers'], ['Social Media Managers'], ['Artists / Illustrators'], ['PR & Communications Specialists'], ['Musicians / Composers', 9], ['Apparel / Fashion Designers']]],
+    ['Environmental & Waste Management', [['Environmental Engineers'], ['Conservation Officers / Ecologists'], ['Waste-Collection Crews'], ['Recycling Technicians / Plant Operators'], ['Hazardous Waste Specialists'], ['Environmental Compliance Officers'], ['Waste Policy & Planning Analysts'], ['Composting & Organic Waste Managers']]],
+    ['Microfinance & SME Support', [['Microfinance Officers / Loan Officers'], ['Business Development Officers / SME Advisors'], ['Cooperative Managers'], ['Credit Analysts'], ['Financial Literacy Trainers'], ['Microinsurance & Risk Officers'], ['SME Finance Platform Operators'], ['Market Linkage / Trade Facilitators']]],
+    ['Emergency & Reserve Roles', [['Disaster-Response Specialists'], ['Emergency Planners'], ['Reserve Medical Teams'], ['Temporary Shelter & Logistics Staff'], ['Search & Rescue Teams'], ['Emergency Communications Officers'], ['Volunteer Coordination Officers']]],
+  ];
+  const SECTORS = DATA.map(([name, titles]) => [name, titles.map(x => x[0])]);
+  const people = DATA.map(([, titles]) => titles.map(x => x[1] || 0));
+  const fmt = (n) => n.toLocaleString('en-US');
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  let seed = 20261013;
+  const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+  // Picker.
+  const sectorSel = document.getElementById('sector'), titleSel = document.getElementById('title');
+  sectorSel.innerHTML = SECTORS.map((s, i) => `<option value="${i}">${esc(s[0])}</option>`).join('');
+  const fillTitles = (j) => { titleSel.innerHTML = SECTORS[sectorSel.value][1].map((t, k) => `<option value="${k}">${esc(t)}</option>`).join(''); titleSel.value = String(j || 0); };
+
+  // Chips: every skill with a number, busiest first.
+  const listed = [];
+  people.forEach((row, t) => row.forEach((n, j) => { if (n) listed.push({ t, j, n }); }));
+  listed.sort((a, b) => b.n - a.n);
+  const chipsEl = document.getElementById('chips');
+  chipsEl.innerHTML = listed.map((x, i) => `<button type="button" class="chip" data-i="${i}" aria-pressed="false">${esc(SECTORS[x.t][1][x.j])}<b>${fmt(x.n)}</b></button>`).join('');
+  chipsEl.addEventListener('click', (ev) => {
+    const b = ev.target.closest('.chip'); if (!b) return;
+    const x = listed[Number(b.dataset.i)];
+    pick(x.t, x.j);
+  });
+
+  function answer() {
+    const t = Number(sectorSel.value), j = Number(titleSel.value), title = SECTORS[t][1][j], n = people[t][j];
+    const big = document.getElementById('big');
+    big.textContent = n ? fmt(n) : 'Fewer than 5';
+    big.classList.toggle('few', !n);
+    document.getElementById('say').textContent = n
+      ? `people in the directory list ${title} and could help you.`
+      : `people in the directory list ${title} so far.`;
+    document.getElementById('also').textContent = n
+      ? 'Their names stay private until you ask for an introduction.'
+      : 'Farah can still look across the directory for someone close, through One Percent below.';
+    chipsEl.querySelectorAll('.chip').forEach(c => { const x = listed[Number(c.dataset.i)]; c.setAttribute('aria-pressed', String(x.t === t && x.j === j)); });
+    highlight(t, j);
+  }
+  function pick(t, j) { sectorSel.value = String(t); fillTitles(j); answer(); }
+  sectorSel.addEventListener('change', () => { fillTitles(0); answer(); });
+  titleSel.addEventListener('change', answer);
+
+  // Globe of skills.
+  const svg = document.getElementById('map');
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (name, attrs, parent) => { const n = document.createElementNS(NS, name); for (const k in attrs) n.setAttribute(k, attrs[k]); (parent || svg).appendChild(n); return n; };
+  const S = 15.5, R3 = Math.sqrt(3), GLOBE = 262;
+  const DIRS = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]];
+  const key = (q, r) => q + ',' + r;
+  const hexes = new Map();
+  for (let q = -12; q <= 12; q++) for (let r = -12; r <= 12; r++) {
+    const x = S * R3 * (q + r / 2), y = S * 1.5 * r, rr = Math.hypot(x, y);
+    if (rr < 196 || (rr < 222 && rnd() < .5)) hexes.set(key(q, r), { q, r, x, y, t: -1 });
+  }
+  const list = [...hexes.values()];
+  const seeds = [list[Math.floor(rnd() * list.length)]];
+  while (seeds.length < SECTORS.length) {
+    let best = null, bestD = -1;
+    for (const h of list) { const dd = Math.min(...seeds.map(s => (s.x - h.x) ** 2 + (s.y - h.y) ** 2)); if (dd > bestD) { bestD = dd; best = h; } }
+    seeds.push(best);
+  }
+  seeds.sort((a, b) => (a.x ** 2 + a.y ** 2) - (b.x ** 2 + b.y ** 2));
+  const order = SECTORS.map((s, i) => i).sort((a, b) => SECTORS[b][1].length - SECTORS[a][1].length);
+  const front = [];
+  seeds.forEach((h, i) => { h.t = order[i]; front.push(h); });
+  while (front.length) {
+    const i = Math.floor(rnd() * front.length), h = front[i];
+    const open = DIRS.map(([dq, dr]) => hexes.get(key(h.q + dq, h.r + dr))).filter(n => n && n.t < 0);
+    if (!open.length) { front.splice(i, 1); continue; }
+    const n = open[Math.floor(rnd() * open.length)]; n.t = h.t; front.push(n);
+  }
+  const terr = SECTORS.map(() => []);
+  for (const h of list) terr[h.t].push(h);
+  terr.forEach((hs, t) => {
+    const s = seeds[order.indexOf(t)];
+    hs.sort((a, b) => ((a.x - s.x) ** 2 + (a.y - s.y) ** 2) - ((b.x - s.x) ** 2 + (b.y - s.y) ** 2));
+    hs.forEach((h, i) => { h.j = i % SECTORS[t][1].length; });
+  });
+
+  const corner = (h, i) => { const a = Math.PI / 180 * (60 * i - 30); return [h.x + (S - .6) * Math.cos(a), h.y + (S - .6) * Math.sin(a)]; };
+  const pts = (h) => [0,1,2,3,4,5].map(i => corner(h, i).map(v => v.toFixed(1)).join(',')).join(' ');
+  const defs = el('defs', {});
+  defs.innerHTML = '<filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5"/></filter>'
+    + '<filter id="rim" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>'
+    + '<radialGradient id="sea" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="var(--night-sea-hi)"/><stop offset="1" stop-color="var(--night-sea-lo)"/></radialGradient>'
+    + `<clipPath id="ball"><circle r="${GLOBE}"/></clipPath>`;
+  el('circle', { r: GLOBE + 4, fill: 'none', stroke: 'var(--glow)', 'stroke-width': 6, opacity: .2, filter: 'url(#rim)' });
+  el('circle', { r: GLOBE, fill: 'url(#sea)' });
+  const gridG = el('g', { 'clip-path': 'url(#ball)', fill: 'none', stroke: 'var(--night-grid)', 'stroke-width': 1.2, 'pointer-events': 'none' });
+  const inner = el('g', { transform: 'rotate(-12)' }, gridG);
+  for (const lat of [-60, -30, 0, 30, 60]) {
+    const a = lat * Math.PI / 180;
+    el('ellipse', { cx: 0, cy: (GLOBE * Math.sin(a)).toFixed(1), rx: (GLOBE * Math.cos(a)).toFixed(1), ry: (GLOBE * Math.cos(a) * .12).toFixed(1) }, inner);
+  }
+  const meridians = [0, 30, 60, 90, 120, 150].map(() => el('ellipse', { cx: 0, cy: 0, rx: 1, ry: GLOBE }, inner));
+  let spin = 0;
+  const turn = () => meridians.forEach((m, i) => m.setAttribute('rx', Math.abs(GLOBE * Math.sin((i * 30 + spin) * Math.PI / 180)).toFixed(1)));
+  turn();
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const tick = () => { spin = (spin + .06) % 180; turn(); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+
+  // Brightness uses a log scale so one very large skill does not wash out the rest.
+  const land = el('g', {}), glowL = el('g', { filter: 'url(#glow)' }), faces = el('g', {}), over = el('g', {});
+  const maxLog = Math.log(1 + Math.max(...people.flat()));
+  for (const h of list) {
+    const n = people[h.t][h.j];
+    const b = n ? Math.max(.3, Math.log(1 + n) / maxLog) : .07;
+    const v = 22 + (h.t * 7) % 12;
+    el('polygon', { points: pts(h), fill: `rgb(${v - 4},${v + 7},${v + 1})` }, land);
+    el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (n ? b * .7 : 0).toFixed(2) }, glowL);
+    const face = el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (b * .9).toFixed(2), class: 'hex', tabindex: 0, role: 'button',
+      'aria-label': `${SECTORS[h.t][1][h.j]}: ${n ? fmt(n) : 'fewer than 5'} people` }, faces);
+    const go = () => { pick(h.t, h.j); document.querySelector('.tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    face.addEventListener('click', go);
+    face.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
+  }
+  const outlineP = el('path', { d: '', stroke: 'var(--night-ink)', 'stroke-width': 1.2, opacity: .35, fill: 'none', 'stroke-dasharray': '3 4' }, over);
+  const ring = el('circle', { r: 8, cx: -999, cy: -999, fill: 'none', stroke: 'var(--pick)', 'stroke-width': 2, class: 'pulse', 'pointer-events': 'none' }, over);
+  const selHex = el('polygon', { points: '', stroke: 'var(--pick)', 'stroke-width': 3, fill: 'none', 'stroke-linejoin': 'round', 'pointer-events': 'none' }, over);
+  function highlight(t, j) {
+    let d = '';
+    for (const h of terr[t]) DIRS.forEach(([dq, dr], i) => { const n = hexes.get(key(h.q + dq, h.r + dr)); if (!n || n.t !== h.t) { const a = corner(h, i), b = corner(h, (i + 1) % 6); d += `M${a[0].toFixed(1)},${a[1].toFixed(1)}L${b[0].toFixed(1)},${b[1].toFixed(1)}`; } });
+    outlineP.setAttribute('d', d);
+    const h = terr[t].find(x => x.j === j) || terr[t][0];
+    selHex.setAttribute('points', pts(h));
+    ring.setAttribute('cx', h.x); ring.setAttribute('cy', h.y);
+  }
+
+  // Open on the busiest skill, so the first view shows a real match.
+  pick(listed[0].t, listed[0].j);
+})();
+</script>
+</body>
+</html>
