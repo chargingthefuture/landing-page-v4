@@ -136,20 +136,21 @@ footer .links a:hover, footer .links a:focus-visible { color: var(--ink); }
 .split li { display: flex; justify-content: space-between; gap: 12px; font-size: .92rem; border-bottom: 1px dotted var(--hair); padding-bottom: 4px; }
 .split b { font: 500 .92rem var(--mono); color: var(--brass); white-space: nowrap; }
 .chip span { margin-left: 4px; color: inherit; opacity: .7; }
-/* People already on the list: one blog invitation at a time, floating at the bottom, closable. */
-.invite { position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20; max-width: 560px; margin: 0 auto; background: var(--card); color: var(--ink); border: 1px solid var(--hair); border-radius: 18px; padding: 16px 18px; display: grid; gap: 6px; box-shadow: 0 12px 40px rgba(0,0,0,.28); }
+/* People already on the list: one blog invitation at a time, floating at the bottom, closable.
+   It takes the page's strong color (deep green in light mode, ivory in dark) so it never blends into the cards behind it. */
+.invite { position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20; max-width: 560px; margin: 0 auto; background: var(--forest); color: var(--on-forest); border: 1px solid var(--forest); border-radius: 18px; padding: 16px 18px; display: grid; gap: 6px; box-shadow: 0 12px 40px rgba(0,0,0,.28); }
 .invite .ihead { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.invite .ilabel { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--soft); }
-.invite .iclose { border: 0; background: transparent; color: var(--soft); font: 400 1.4rem/1 var(--sans); width: 36px; height: 36px; margin: -8px -8px -8px 0; cursor: pointer; border-radius: 50%; }
-.invite .idate { margin: 0; font-size: .85rem; color: var(--soft); }
+.invite .ilabel { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .14em; text-transform: uppercase; color: inherit; opacity: .75; }
+.invite .iclose { border: 0; background: transparent; color: inherit; font: 400 1.4rem/1 var(--sans); width: 36px; height: 36px; margin: -8px -8px -8px 0; cursor: pointer; border-radius: 50%; }
+.invite .idate { margin: 0; font-size: .85rem; color: inherit; opacity: .75; }
 .invite .ititle { margin: 0; font: 600 1.1rem/1.25 var(--sans); }
-.invite .iopen { margin: 0; font-size: .95rem; color: var(--ink); opacity: .85; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.invite .iopen { margin: 0; font-size: .95rem; color: inherit; opacity: .9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .invite .ifoot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
-.invite .iread { color: var(--forest); font-weight: 600; text-decoration: none; }
-.invite .inav { display: flex; align-items: center; gap: 8px; font: 500 .85rem var(--mono); color: var(--soft); font-variant-numeric: tabular-nums; }
-.invite .inav button { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--hair); background: transparent; color: var(--ink); font: 500 1.2rem/1 var(--sans); cursor: pointer; }
+.invite .iread { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.invite .inav { display: flex; align-items: center; gap: 8px; font: 500 .85rem var(--mono); color: inherit; font-variant-numeric: tabular-nums; }
+.invite .inav button { width: 40px; height: 40px; border-radius: 12px; border: 1px solid currentColor; background: transparent; color: inherit; font: 500 1.2rem/1 var(--sans); cursor: pointer; }
 .invite .inav button:disabled { opacity: .35; cursor: default; }
-.invite button:focus-visible, .invite a:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+.invite button:focus-visible, .invite a:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 body.has-invite .wrap { padding-bottom: 260px; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
@@ -167,7 +168,7 @@ body.has-invite .wrap { padding-bottom: 260px; }
   <header class="hero">
     <p class="eyebrow">Skills Economy</p>
     <h1>See who could help you. No account needed.</h1>
-    <p class="lede"><span id="heroCount">311</span> people are listed in the Skills Economy directory. Pick a skill and see how many could help.</p>
+    <p class="lede"><span id="heroCount">311</span> people are listed in the Skills Economy directory. Tap what you need and see how many could help.</p>
   </header>
 
   <section class="tool" aria-labelledby="tooltitle">
