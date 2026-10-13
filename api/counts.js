@@ -16,13 +16,12 @@ export default async function handler(req, res) {
       sql`SELECT job_title_id, sector, title, people, seekers
             FROM directory_public_skill_counts
            ORDER BY sector_order, sector, title_order, title`,
-      sql`SELECT total, with_a_title FROM directory_public_totals`,
+      sql`SELECT total FROM directory_public_totals`,
     ]);
     // Counts change a few times a day, so a five-minute copy at the edge is plenty.
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
     return res.status(200).json({
       total: totals[0]?.total ?? 0,
-      withATitle: totals[0]?.with_a_title ?? 0,
       titles: titles.map((r) => ({ id: r.job_title_id, sector: r.sector, title: r.title, people: r.people, seekers: r.seekers })),
     });
   } catch (err) {

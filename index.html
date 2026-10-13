@@ -178,7 +178,6 @@ footer p { margin: 0; }
     <h2 id="prooftitle">Why people are here</h2>
     <ul class="facts">
       <li><b id="fTotal">311</b><span>people in the directory</span></li>
-      <li><b id="fTitled">305</b><span>of them list what they do</span></li>
       <li><b>85,000</b><span>views on Farah's Quora answers</span></li>
     </ul>
     <p>Those Quora answers brought people into Skills Economy until the accounts were removed. The people did not go away, so they are listed here now.</p>
@@ -280,7 +279,6 @@ function boot(DATA, live) {
 
   if (live) {
     for (const id of ['heroCount', 'fTotal']) document.getElementById(id).textContent = fmt(live.total);
-    document.getElementById('fTitled').textContent = fmt(live.withATitle);
     document.getElementById('asof').textContent = 'Counts come live from the Skills Economy directory, which Farah adds to most days. A skill with fewer than 5 people shows no number, so nobody can be picked out.';
     document.getElementById('save').hidden = false;
     document.getElementById('back').hidden = false;
