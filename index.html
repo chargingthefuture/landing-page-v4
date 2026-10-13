@@ -118,6 +118,17 @@ footer p { margin: 0; }
 .back input { flex: 1 1 180px; min-width: 0; }
 .back .msg { margin: 0; font-size: .92rem; color: var(--soft); }
 .since { margin: 0; font: 500 1.15rem/1.35 var(--serif); }
+[hidden] { display: none !important; }
+.tool > h2 { margin: 0; }
+.tool > .fine { margin: -8px 0 0; }
+.more { border: 1px solid var(--hair); border-radius: 12px; padding: 10px 12px; background: var(--paper); }
+.more summary { cursor: pointer; font: 600 .9rem var(--sans); color: var(--forest); }
+.more[open] { display: grid; gap: 12px; }
+.more .pair { margin-top: 10px; }
+.split { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
+.split li { display: flex; justify-content: space-between; gap: 12px; font-size: .92rem; border-bottom: 1px dotted var(--hair); padding-bottom: 4px; }
+.split b { font: 500 .92rem var(--mono); color: var(--brass); white-space: nowrap; }
+.chip span { margin-left: 4px; color: inherit; opacity: .7; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
@@ -134,16 +145,21 @@ footer p { margin: 0; }
   </header>
 
   <section class="tool" aria-labelledby="tooltitle">
-    <h2 id="tooltitle" class="vh">Find your matches</h2>
-    <p class="kicker">Most listed</p>
-    <div class="chips" id="chips" role="group" aria-label="Skills with the most people"></div>
-    <div class="pair">
-      <div class="row"><label for="sector">Kind of work</label><select id="sector"></select></div>
-      <div class="row"><label for="title">Skill</label><select id="title"></select></div>
-    </div>
+    <h2 id="tooltitle">What do you need?</h2>
+    <p class="fine">Tap all that apply. You'll see how many people in the directory match you.</p>
+    <div class="chips" id="needs" role="group" aria-label="What you need"></div>
+    <details class="more" id="more">
+      <summary>Something else? Add a skill</summary>
+      <div class="pair">
+        <div class="row"><label for="sector">Kind of work</label><select id="sector"></select></div>
+        <div class="row"><label for="title">Skill</label><select id="title"></select></div>
+      </div>
+      <button class="btn ghost" type="button" id="addSkill">Add this skill</button>
+    </details>
     <div class="answer" aria-live="polite">
-      <p class="big" id="big">0</p>
+      <p class="big" id="big"></p>
       <p class="say" id="say"></p>
+      <ul class="split" id="split"></ul>
       <p class="also" id="also"></p>
     </div>
     <p class="private"><b>Private.</b> Nobody sees who you are, and you never see who they are, until somebody asks for an introduction.</p>
@@ -203,13 +219,30 @@ footer p { margin: 0; }
 </main>
 
 <script>
+// What a visitor can say they need, and the job titles in the directory that can help with each.
+// A person is counted once however many of a visitor's needs they cover.
+const NEEDS = [
+  ['job', 'A job', ['Human Resources Professionals / HR Generalists', 'Vocational Trainers', 'Business Development Officers / SME Advisors', 'Community Development Officers', 'Management Consultants', 'Project Managers']],
+  ['housing', 'Housing', ['Property Managers', 'Construction Laborers', 'Masons', 'Electricians', 'Plumbers', 'Plumbers (construction)', 'HVAC / Insulation Technicians', 'Architects', 'Civil Engineers', 'Temporary Shelter & Logistics Staff']],
+  ['food', 'Food', ['Farmers', 'Food-Processing Workers', 'Chefs / Cooks', 'Agribusiness Managers']],
+  ['health', 'Health care', ['Nurses', 'Medical Assistants', 'Home Health Aides / Caregivers', 'General Practitioners', 'Specialists (e.g., cardiology, pediatrics)', 'Midwives', 'Pharmacists', 'Community-Health Workers', 'EMS / Paramedics']],
+  ['talk', 'Someone to talk to', ['Mental Health Counselors', 'Psychologists', 'Therapists', 'Social Workers']],
+  ['kids', 'Childcare', ['Childcare Workers', 'Early-Childhood Educators']],
+  ['legal', 'Legal help', ['Lawyers', 'Lawyers / Legal Consultants']],
+  ['ride', 'A ride or a delivery', ['Truck Drivers', 'Delivery Drivers / Couriers', 'Bus/Train Operators', 'Mechanics']],
+  ['money', 'Money and paperwork', ['Accountants', 'Financial Analysts / Accountants', 'Financial Advisors', 'Financial Literacy Trainers', 'Microfinance Officers / Loan Officers', 'Administrative & Office Support']],
+  ['learn', 'To learn a skill', ['Tutors', 'Vocational Trainers', 'Primary School Teachers', 'Secondary School Teachers', 'University Faculty', 'Financial Literacy Trainers']],
+  ['tech', 'Tech help', ['Software Developers', 'Software Engineers / Developers', 'Web Developers', 'IT Support Technicians', 'Tech Support / DevOps']],
+  ['business', 'To start a business', ['Business Development Officers / SME Advisors', 'Marketing Specialists', 'Cooperative Managers', 'Market Linkage / Trade Facilitators', 'Social Media Managers', 'Graphic / Visual Designers']],
+  ['voice', 'Someone to speak up for me', ['Advocates / Awareness Raisers', 'Journalists / Reporters', 'PR & Communications Specialists']],
+  ['care', 'Hair, repairs or cleaning', ['Personal Services (hairdressers, repair)', 'Cleaners / Janitorial']],
+];
+
 // Counts baked in on 2026-10-13, used only when the live counts cannot be read.
-// Entries are [title, people, jobTitleId, seekers]; the baked ones have no id, so saving stays off.
+// Entries are [title, people, jobTitleId]; the baked ones have no id, so saving stays off.
 (() => {
-  // Real counts from the directory, 2026-10-13. A number appears only where 5 or more people list the skill.
   // Advocates / Awareness Raisers is a real skill, given from a person's activity on Quora; Farah adds or replaces it when they
-  // join or reply. It stays on the page, but the page never opens on it: an advocate is not who gets somebody food, housing,
-  // a job, health care or a babysitter.
+  // join or reply.
   const BAKED = [
     ['Food & Agriculture', [['Farmers'], ['Agronomists'], ['Livestock Veterinarians'], ['Food-Processing Workers', 5], ['Agribusiness Managers']]],
     ['Water & Sanitation', [['Water Engineers'], ['Treatment-Plant Operators'], ['Plumbers'], ['Distribution Technicians']]],
@@ -238,7 +271,7 @@ footer p { margin: 0; }
     const order = [], bySector = new Map();
     for (const r of body.titles) {
       if (!bySector.has(r.sector)) { bySector.set(r.sector, []); order.push(r.sector); }
-      bySector.get(r.sector).push([r.title, r.people || 0, r.id, r.seekers || 0]);
+      bySector.get(r.sector).push([r.title, r.people || 0, r.id]);
     }
     return order.map(name => [name, bySector.get(name)]);
   }
@@ -255,64 +288,120 @@ footer p { margin: 0; }
 
 function boot(DATA, live) {
   const SECTORS = DATA.map(([name, titles]) => [name, titles.map(x => x[0])]);
-  const ids = DATA.map(([, titles]) => titles.map(x => x[2] || null));
-  const seekers = DATA.map(([, titles]) => titles.map(x => x[3] || 0));
   const people = DATA.map(([, titles]) => titles.map(x => x[1] || 0));
   const fmt = (n) => n.toLocaleString('en-US');
-  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
   let seed = 20261013;
   const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
-  // Picker.
-  const sectorSel = document.getElementById('sector'), titleSel = document.getElementById('title');
-  sectorSel.innerHTML = SECTORS.map((s, i) => `<option value="${i}">${esc(s[0])}</option>`).join('');
-  const fillTitles = (j) => { titleSel.innerHTML = SECTORS[sectorSel.value][1].map((t, k) => `<option value="${k}">${esc(t)}</option>`).join(''); titleSel.value = String(j || 0); };
-
-  // Chips: every skill with a number, busiest first.
-  const listed = [];
-  people.forEach((row, t) => row.forEach((n, j) => { if (n) listed.push({ t, j, n }); }));
-  listed.sort((a, b) => b.n - a.n);
-  const chipsEl = document.getElementById('chips');
-  const chipHtml = (x, i) => `<button type="button" class="chip" data-i="${i}" aria-pressed="false">${esc(SECTORS[x.t][1][x.j])}<b>${fmt(x.n)}</b></button>`;
-  // Two rows: busiest first, read top then bottom, left to right.
-  const rows = [[], []];
-  listed.forEach((x, i) => rows[i % 2].push(chipHtml(x, i)));
-  chipsEl.innerHTML = rows.map(r => `<div class="crow">${r.join('')}</div>`).join('');
-  chipsEl.addEventListener('click', (ev) => {
-    const b = ev.target.closest('.chip'); if (!b) return;
-    const x = listed[Number(b.dataset.i)];
-    pick(x.t, x.j);
-  });
+  // Every title by name, with where it sits, its count and (live only) its id.
+  const byName = new Map(), byId = new Map();
+  DATA.forEach(([, titles], t) => titles.forEach((x, j) => {
+    const rec = { t, j, name: x[0], n: x[1] || 0, id: x[2] || null };
+    byName.set(x[0], rec);
+    if (rec.id) byId.set(rec.id, rec);
+  }));
+  const needTitles = (key) => (NEEDS.find(n => n[0] === key)?.[2] || []).map(name => byName.get(name)).filter(Boolean);
 
   if (live) {
     for (const id of ['heroCount', 'fTotal']) document.getElementById(id).textContent = fmt(live.total);
-    document.getElementById('asof').textContent = 'Counts come live from the Skills Economy directory, which Farah adds to most days. A skill with fewer than 5 people shows no number, so nobody can be picked out.';
-    document.getElementById('save').hidden = false;
+    document.getElementById('asof').textContent = 'Counts come live from the Skills Economy directory, which Farah adds to most days. A group under 5 shows no number, so nobody can be picked out.';
     document.getElementById('back').hidden = false;
   }
 
-  function answer() {
-    const t = Number(sectorSel.value), j = Number(titleSel.value), title = SECTORS[t][1][j], n = people[t][j];
-    const big = document.getElementById('big');
-    big.textContent = n ? fmt(n) : 'Fewer than 5';
-    big.classList.toggle('few', !n);
-    document.getElementById('say').textContent = n
-      ? `people in the directory list ${title} and could help you.`
-      : `people in the directory list ${title} so far.`;
-    document.getElementById('also').textContent = n
-      ? 'Their names stay private until you ask for an introduction.'
-      : 'Farah adds people most days. Save this match to come back and see who is new, or ask Farah through One Percent below.';
-    if (seekers[t][j]) document.getElementById('also').textContent += ` ${fmt(seekers[t][j])} visitors are looking for this too.`;
-    document.getElementById('saved').hidden = true;
-    chipsEl.querySelectorAll('.chip').forEach(c => { const x = listed[Number(c.dataset.i)]; c.setAttribute('aria-pressed', String(x.t === t && x.j === j)); });
-    const on = chipsEl.querySelector('.chip[aria-pressed="true"]');
-    if (on && (on.offsetLeft < chipsEl.scrollLeft || on.offsetLeft + on.offsetWidth > chipsEl.scrollLeft + chipsEl.clientWidth)) chipsEl.scrollTo({ left: on.offsetLeft - chipsEl.offsetLeft, behavior: 'smooth' });
-    highlight(t, j);
+  // What the visitor has picked: needs by key, and any single skills they added, by title name.
+  const picked = new Set(), extra = new Set();
+  const needsEl = document.getElementById('needs');
+  function drawChips() {
+    const chips = NEEDS.map(([key, label]) => `<button type="button" class="chip" data-need="${key}" aria-pressed="${picked.has(key)}">${esc(label)}</button>`)
+      .concat([...extra].map(name => `<button type="button" class="chip" data-skill="${esc(name)}" aria-pressed="true">${esc(name)} <span aria-hidden="true">×</span></button>`));
+    const rows = [[], []];
+    chips.forEach((c, i) => rows[i % 2].push(c));
+    needsEl.innerHTML = rows.map(r => `<div class="crow">${r.join('')}</div>`).join('');
   }
-  function pick(t, j) { sectorSel.value = String(t); fillTitles(j); answer(); }
-  sectorSel.addEventListener('change', () => { fillTitles(0); answer(); });
-  titleSel.addEventListener('change', answer);
+  needsEl.addEventListener('click', (ev) => {
+    const b = ev.target.closest('.chip'); if (!b) return;
+    if (b.dataset.need) { picked.has(b.dataset.need) ? picked.delete(b.dataset.need) : picked.add(b.dataset.need); }
+    else if (b.dataset.skill) extra.delete(b.dataset.skill);
+    drawChips(); recount();
+    if (b.dataset.need && picked.has(b.dataset.need)) { const first = needTitles(b.dataset.need)[0]; if (first) highlight(first.t, first.j); }
+  });
+
+  // Something else: add one skill from the full list.
+  const sectorSel = document.getElementById('sector'), titleSel = document.getElementById('title');
+  sectorSel.innerHTML = SECTORS.map((s, i) => `<option value="${i}">${esc(s[0])}</option>`).join('');
+  const fillTitles = (j) => { titleSel.innerHTML = SECTORS[sectorSel.value][1].map((t, k) => `<option value="${k}">${esc(t)}</option>`).join(''); titleSel.value = String(j || 0); };
+  sectorSel.addEventListener('change', () => fillTitles(0));
+  fillTitles(0);
+  function addSkill(t, j) {
+    extra.add(SECTORS[t][1][j]);
+    drawChips(); recount(); highlight(t, j);
+  }
+  document.getElementById('addSkill').addEventListener('click', () => addSkill(Number(sectorSel.value), Number(titleSel.value)));
+  // The globe calls this when a hexagon is tapped.
+  function pick(t, j) { sectorSel.value = String(t); fillTitles(j); addSkill(t, j); }
+
+  // The groups to count: one per picked need, one per added skill.
+  function groups() {
+    const g = [];
+    for (const [key, label] of NEEDS) if (picked.has(key)) g.push({ key, label, recs: needTitles(key) });
+    for (const name of extra) { const r = byName.get(name); if (r) g.push({ key: 'skill:' + name, label: name, recs: [r] }); }
+    return g;
+  }
+  const plus = (n) => n ? `${fmt(n)}+` : 'Fewer than 5';
+
+  // Without live counts there is no way to count a person once across titles, so the page shows the
+  // largest single title: a floor, never an overcount.
+  function bakedCount(recs) {
+    const top = Math.max(0, ...recs.map(r => r.n));
+    return top >= 5 ? Math.floor(top / 5) * 5 : null;
+  }
+  async function liveCount(g) {
+    const body = { all: [...new Set(g.flatMap(x => x.recs.map(r => r.id)))], groups: Object.fromEntries(g.map(x => [x.key, x.recs.map(r => r.id)])) };
+    const res = await fetch('/api/count', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || 'The count could not be read. Try again in a minute.');
+    return out;
+  }
+
+  let ticket = 0, lastTotal = null;
+  async function recount() {
+    const g = groups(), mine = ++ticket;
+    const big = document.getElementById('big'), say = document.getElementById('say'), split = document.getElementById('split'), also = document.getElementById('also');
+    document.getElementById('saved').hidden = true;
+    document.getElementById('save').hidden = true;
+    if (!g.length) {
+      big.textContent = ''; split.innerHTML = '';
+      say.textContent = 'Tap what you need above.';
+      also.textContent = '';
+      return;
+    }
+    let total, by = {}, once = false;
+    if (live) {
+      say.textContent = 'Counting…';
+      try {
+        const out = await liveCount(g);
+        if (mine !== ticket) return;
+        total = out.total; by = out.groups || {}; once = true;
+      } catch {
+        if (mine !== ticket) return;
+        // The per-person count is unavailable; fall back to the floor below rather than show nothing.
+      }
+    }
+    if (!once) {
+      total = bakedCount(g.flatMap(x => x.recs));
+      for (const x of g) by[x.key] = bakedCount(x.recs);
+    }
+    lastTotal = total;
+    big.textContent = total ? `${fmt(total)}+` : 'Fewer than 5';
+    big.classList.toggle('few', !total);
+    say.textContent = total ? 'people in the directory match what you need.' : 'people in the directory match what you need so far.';
+    split.innerHTML = g.length > 1 ? g.map(x => `<li><span>${esc(x.label)}</span><b>${plus(by[x.key])}</b></li>`).join('') : '';
+    also.textContent = total
+      ? (once ? 'Each person is counted once, even when they can help with more than one thing. ' : '') + 'Their names stay private until you ask for an introduction.'
+      : 'Farah adds people most days. Save this to come back and see who is new, or ask Farah through One Percent below.';
+    document.getElementById('save').hidden = !once;
+  }
 
   // Globe of skills.
   const svg = document.getElementById('map');
@@ -416,24 +505,37 @@ function boot(DATA, live) {
   };
   const saveBtn = document.getElementById('save');
   saveBtn.addEventListener('click', async () => {
-    const t = Number(sectorSel.value), j = Number(titleSel.value), box = document.getElementById('saved');
+    const box = document.getElementById('saved');
+    const ids = [...new Set(groups().flatMap(x => x.recs.map(r => r.id)).filter(Boolean))];
     saveBtn.disabled = true;
     box.hidden = false;
     box.innerHTML = '<p>Saving…</p>';
     try {
-      const res = await fetch('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobTitleId: ids[t][j] }) });
+      const res = await fetch('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobTitleIds: ids }) });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.code) throw new Error(body.error || 'The match could not be saved. Try again in a minute.');
       remember(body.code);
       document.getElementById('bcode').value = body.code;
       box.innerHTML = `<p>Your code</p>
         <div class="coderow"><span class="code" id="codeText">${esc(body.code)}</span><button class="btn ghost" type="button" id="copy">Copy</button></div>
-        <p class="also">Farah adds people most days. Come back, enter this code below, and see who is new. Keep it somewhere safe: it is the only way back, because nobody asked who you are.</p>`;
+        <p class="also">Farah adds people most days. Come back, enter this code below, and see how many more match you. Keep it somewhere safe: it is the only way back, because nobody asked who you are.</p>`;
       copyBtn(document.getElementById('copy'), document.getElementById('codeText'));
     } catch (err) {
       box.innerHTML = `<p>${esc(err.message)}</p>`;
     } finally { saveBtn.disabled = false; }
   });
+
+  // Put a saved set of job titles back on the page: every need whose titles are all in it, and the rest as added skills.
+  function restore(ids) {
+    const have = new Set(ids), covered = new Set();
+    picked.clear(); extra.clear();
+    for (const [key] of NEEDS) {
+      const recIds = needTitles(key).map(r => r.id).filter(Boolean);
+      if (recIds.length && recIds.every(id => have.has(id))) { picked.add(key); recIds.forEach(id => covered.add(id)); }
+    }
+    for (const id of ids) if (!covered.has(id) && byId.has(id)) extra.add(byId.get(id).name);
+    drawChips();
+  }
 
   const backres = document.getElementById('backres');
   async function lookUp(raw, quiet) {
@@ -445,13 +547,13 @@ function boot(DATA, live) {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || 'The saved match could not be read. Try again in a minute.');
       remember(body.code);
-      const at = DATA.findIndex(([, ts]) => ts.some(x => x[2] === body.jobTitleId));
-      if (at >= 0) pick(at, DATA[at][1].findIndex(x => x[2] === body.jobTitleId));
+      restore(body.jobTitleIds || []);
+      await recount();
       const then = body.peopleAtSave, now = body.people, saved = dateFmt.format(new Date(body.savedAt));
       let line;
-      if (now && then) line = now > then ? `${fmt(now - then)} new since you saved it on ${saved}. ${fmt(now)} people list ${body.title} now.` : `No one new yet since ${saved}. ${fmt(now)} people list ${body.title}. Farah adds people most days.`;
-      else if (now) line = `${fmt(now)} people list ${body.title} now. When you saved it on ${saved} there were fewer than 5.`;
-      else line = `Still fewer than 5 people list ${body.title}. Farah adds people most days; check back, or ask Farah through One Percent.`;
+      if (now && then) line = now > then ? `About ${fmt(now - then)} more people match you than when you saved this on ${saved}. ${fmt(now)}+ in all.` : `No one new yet since ${saved}. ${fmt(now)}+ people match you. Farah adds people most days.`;
+      else if (now) line = `${fmt(now)}+ people match you now. When you saved this on ${saved} there were fewer than 5.`;
+      else line = `Still fewer than 5 people match you. Farah adds people most days; check back, or ask Farah through One Percent.`;
       backres.innerHTML = `<p class="since">${esc(line)}</p>`;
     } catch (err) {
       backres.innerHTML = quiet ? '' : `<p class="msg">${esc(err.message)}</p>`;
@@ -459,9 +561,8 @@ function boot(DATA, live) {
   }
   document.getElementById('backform').addEventListener('submit', (ev) => { ev.preventDefault(); lookUp(document.getElementById('bcode').value, false); });
 
-  // Open on the busiest skill that meets a daily need, so the first view shows a real match.
-  const first = listed.find(x => SECTORS[x.t][1][x.j] !== 'Advocates / Awareness Raisers');
-  pick(first.t, first.j);
+  drawChips();
+  recount();
   // A link ending in #ABCDE-FGHJK, or a code saved on this phone, opens straight to that match.
   if (live) {
     const fromLink = location.hash.length > 1 ? location.hash.slice(1) : '';
