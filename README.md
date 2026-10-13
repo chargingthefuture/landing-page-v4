@@ -8,5 +8,5 @@ directory could help, then chooses the free Goals board or the paid One Percent 
   runs in the Neon dashboard. Any skill with fewer than 5 people shows no number, so nobody can be
   picked out. The rules for these counts are in the main repo's `CLAUDE.md`, under "Public skill
   counts".
-- "Advocates / Awareness Raisers" is left out on purpose: it is the placeholder title for people
-  added from Quora who listed no skill.
+- "Advocates / Awareness Raisers" is a real skill, given from a person's activity on Quora and
+  replaced once they join or reply. It is listed, but the page never opens on it.
