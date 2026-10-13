@@ -36,6 +36,10 @@ body { margin: 0; background: var(--sunk); color: var(--ink); font: 400 16px/1.5
 .wrap { max-width: 640px; margin: 0 auto; background: var(--paper); padding-inline: 20px; padding-block: 18px 56px; display: grid; gap: 28px; min-height: 100vh; }
 .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .85rem; }
 .top a { color: var(--soft); text-decoration: none; }
+.ctheme { display: inline-flex; border: 1px solid var(--hair); border-radius: 999px; padding: 3px; background: var(--card); }
+.ctheme button { border: 0; background: transparent; color: var(--soft); font: 600 .8rem var(--sans); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 32px; }
+.ctheme button[aria-pressed="true"] { background: var(--forest); color: var(--on-forest); }
+.ctheme button:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
 .sample { font: 600 .68rem/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--brass); border: 1px dashed var(--brass); border-radius: 999px; padding: 5px 9px; }
 
 .hero { display: grid; gap: 10px; }
@@ -136,6 +140,10 @@ footer p { margin: 0; }
 <main class="wrap">
   <div class="top">
     <a href="https://farahbrunache.com">&larr; Back to the blog</a>
+    <div class="ctheme" role="group" aria-label="Theme">
+      <button type="button" data-pick="light" aria-pressed="true">Light</button>
+      <button type="button" data-pick="dark" aria-pressed="false">Dark</button>
+    </div>
   </div>
 
   <header class="hero">
@@ -219,6 +227,22 @@ footer p { margin: 0; }
 </main>
 
 <script>
+// Light / dark toggle, as on One Percent. Starts from the phone's setting; a choice is remembered on this phone.
+(() => {
+  const root = document.documentElement, KEY = 'ctf-theme';
+  const buttons = document.querySelectorAll('.ctheme button');
+  const show = (t) => buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pick === t)));
+  let saved = null;
+  try { saved = localStorage.getItem(KEY); } catch {}
+  if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+  show(root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  buttons.forEach(b => b.addEventListener('click', () => {
+    root.dataset.theme = b.dataset.pick;
+    show(b.dataset.pick);
+    try { localStorage.setItem(KEY, b.dataset.pick); } catch {}
+  }));
+})();
+
 // What a visitor can say they need, and the job titles in the directory that can help with each.
 // A person is counted once however many of a visitor's needs they cover.
 const NEEDS = [
