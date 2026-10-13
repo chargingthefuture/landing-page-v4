@@ -485,12 +485,28 @@ function boot(DATA, live) {
     big.classList.remove('few');
     say.textContent = unknown ? 'Farah is still adding people for this.' : total === 1 ? 'person in the directory matches what you need.' : total ? 'people in the directory match what you need.' : 'people in the directory match what you need so far.';
     split.innerHTML = g.length > 1 ? g.map(x => `<li><span>${esc(x.label)}</span><b>${shown(by[x.key], once)}</b></li>`).join('') : '';
-    also.textContent = total
+    // A need nobody matches is noted as in demand, so Farah knows to look for somebody.
+    const empty = once ? g.filter(x => by[x.key] === 0) : [];
+    if (empty.length) noteUnmet(empty);
+    const noted = !empty.length ? ''
+      : !total ? ' This has been noted as an in-demand need, so Farah knows to look for somebody.'
+      : ` ${empty.map(x => x.label).join(', ')} ${empty.length === 1 ? 'has' : 'have'} nobody yet and ${empty.length === 1 ? 'has' : 'have'} been noted as in demand, so Farah knows to look.`;
+    also.textContent = (total
       ? (once ? 'Each person is counted once, even when they can help with more than one thing. ' : '') + 'Their names stay private until you ask for an introduction.'
       : once
         ? 'Farah adds people most days. Save this to come back and see who is new, or ask Farah through One Percent below.'
-        : 'Farah adds people most days. Ask Farah through One Percent below to look for someone close.';
+        : 'Farah adds people most days. Ask Farah through One Percent below to look for someone close.') + noted;
     document.getElementById('save').hidden = !once;
+  }
+
+  // Each need that matched nobody is sent once per visit. Nothing about the visitor goes with it.
+  const unmetSent = new Set();
+  function noteUnmet(groupsWithNobody) {
+    const fresh = groupsWithNobody.filter(x => !unmetSent.has(x.key));
+    if (!fresh.length) return;
+    fresh.forEach(x => unmetSent.add(x.key));
+    const needs = fresh.map(x => ({ need: x.key.startsWith('skill:') ? x.key : x.label, jobTitleIds: x.recs.map(r => r.id).filter(Boolean) }));
+    fetch('/api/unmet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ needs }) }).catch(() => {});
   }
 
   // Globe of skills.
