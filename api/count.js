@@ -41,6 +41,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('count: directory_public_match_count failed:', err?.message);
-    return res.status(502).json({ error: 'The count could not be read from the database.' });
+    return res.status(502).json({ error: 'The count could not be read from the database.', code: err?.code || null });
   }
 }
