@@ -107,6 +107,15 @@ footer p { margin: 0; }
 .chip[aria-pressed="true"] b { color: var(--on-forest); }
 .chip:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
 .kicker { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+.saved { background: var(--paper); border: 1px dashed var(--hair); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+.saved p { margin: 0; }
+.code { font: 500 1.5rem/1 var(--mono); letter-spacing: .06em; color: var(--forest); overflow-wrap: anywhere; }
+.coderow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.back { display: grid; gap: 10px; }
+.back form { display: flex; gap: 8px; flex-wrap: wrap; }
+.back input { flex: 1 1 180px; min-width: 0; }
+.back .msg { margin: 0; font-size: .92rem; color: var(--soft); }
+.since { margin: 0; font: 500 1.15rem/1.35 var(--serif); }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
@@ -136,6 +145,18 @@ footer p { margin: 0; }
       <p class="also" id="also"></p>
     </div>
     <p class="private"><b>Private.</b> Nobody sees who you are, and you never see who they are, until somebody asks for an introduction.</p>
+    <button class="btn" type="button" id="save" hidden>Save this match</button>
+    <div class="saved" id="saved" hidden></div>
+  </section>
+
+  <section class="back" id="back" aria-labelledby="backtitle" hidden>
+    <h2 id="backtitle">Back to see your match?</h2>
+    <form id="backform" novalidate>
+      <label for="bcode" class="vh">Your 10-character code</label>
+      <input type="text" id="bcode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE-FGHJK">
+      <button class="btn ghost" type="submit">See who's new</button>
+    </form>
+    <div id="backres" aria-live="polite"></div>
   </section>
 
   <section class="doors" aria-label="Meet them">
@@ -156,8 +177,8 @@ footer p { margin: 0; }
   <section class="proof" aria-labelledby="prooftitle">
     <h2 id="prooftitle">Why people are here</h2>
     <ul class="facts">
-      <li><b>311</b><span>people in the directory</span></li>
-      <li><b>305</b><span>of them list what they do</span></li>
+      <li><b id="fTotal">311</b><span>people in the directory</span></li>
+      <li><b id="fTitled">305</b><span>of them list what they do</span></li>
       <li><b>85,000</b><span>views on Farah's Quora answers</span></li>
     </ul>
     <p>Those Quora answers brought people into Skills Economy until the accounts were removed. The people did not go away, so they are listed here now.</p>
@@ -170,17 +191,19 @@ footer p { margin: 0; }
   </section>
 
   <footer>
-    <p>Counts come from the Skills Economy directory on October 13, 2026. A skill with fewer than 5 people shows no number, so nobody can be picked out.</p>
+    <p id="asof">Counts come from the Skills Economy directory on October 13, 2026. A skill with fewer than 5 people shows no number, so nobody can be picked out.</p>
   </footer>
 </main>
 
 <script>
+// Counts baked in on 2026-10-13, used only when the live counts cannot be read.
+// Entries are [title, people, jobTitleId, seekers]; the baked ones have no id, so saving stays off.
 (() => {
   // Real counts from the directory, 2026-10-13. A number appears only where 5 or more people list the skill.
   // Advocates / Awareness Raisers is a real skill, given from a person's activity on Quora; Farah adds or replaces it when they
   // join or reply. It stays on the page, but the page never opens on it: an advocate is not who gets somebody food, housing,
   // a job, health care or a babysitter.
-  const DATA = [
+  const BAKED = [
     ['Food & Agriculture', [['Farmers'], ['Agronomists'], ['Livestock Veterinarians'], ['Food-Processing Workers', 5], ['Agribusiness Managers']]],
     ['Water & Sanitation', [['Water Engineers'], ['Treatment-Plant Operators'], ['Plumbers'], ['Distribution Technicians']]],
     ['Energy & Utilities', [['Power-Plant Operators'], ['Electrical Engineers'], ['Renewable Technicians'], ['Grid Operators'], ['Maintenance Crews']]],
@@ -202,7 +225,31 @@ footer p { margin: 0; }
     ['Microfinance & SME Support', [['Microfinance Officers / Loan Officers'], ['Business Development Officers / SME Advisors'], ['Cooperative Managers'], ['Credit Analysts'], ['Financial Literacy Trainers'], ['Microinsurance & Risk Officers'], ['SME Finance Platform Operators'], ['Market Linkage / Trade Facilitators']]],
     ['Emergency & Reserve Roles', [['Disaster-Response Specialists'], ['Emergency Planners'], ['Reserve Medical Teams'], ['Temporary Shelter & Logistics Staff'], ['Search & Rescue Teams'], ['Emergency Communications Officers'], ['Volunteer Coordination Officers']]],
   ];
+
+  // Live counts from /api/counts, grouped by sector in the order the database gives them.
+  function fromLive(body) {
+    const order = [], bySector = new Map();
+    for (const r of body.titles) {
+      if (!bySector.has(r.sector)) { bySector.set(r.sector, []); order.push(r.sector); }
+      bySector.get(r.sector).push([r.title, r.people || 0, r.id, r.seekers || 0]);
+    }
+    return order.map(name => [name, bySector.get(name)]);
+  }
+  async function loadLive() {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 3000);
+    try {
+      const res = await fetch('/api/counts', { signal: ctl.signal });
+      if (!res.ok) return null;
+      const body = await res.json();
+      return Array.isArray(body.titles) && body.titles.length ? body : null;
+    } catch { return null; } finally { clearTimeout(timer); }
+  }
+  loadLive().then(live => boot(live ? fromLive(live) : BAKED, live));
+
+function boot(DATA, live) {
   const SECTORS = DATA.map(([name, titles]) => [name, titles.map(x => x[0])]);
+  const ids = DATA.map(([, titles]) => titles.map(x => x[2] || null));
+  const seekers = DATA.map(([, titles]) => titles.map(x => x[3] || 0));
   const people = DATA.map(([, titles]) => titles.map(x => x[1] || 0));
   const fmt = (n) => n.toLocaleString('en-US');
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -231,6 +278,14 @@ footer p { margin: 0; }
     pick(x.t, x.j);
   });
 
+  if (live) {
+    for (const id of ['heroCount', 'fTotal']) document.getElementById(id).textContent = fmt(live.total);
+    document.getElementById('fTitled').textContent = fmt(live.withATitle);
+    document.getElementById('asof').textContent = 'Counts come live from the Skills Economy directory, which Farah adds to most days. A skill with fewer than 5 people shows no number, so nobody can be picked out.';
+    document.getElementById('save').hidden = false;
+    document.getElementById('back').hidden = false;
+  }
+
   function answer() {
     const t = Number(sectorSel.value), j = Number(titleSel.value), title = SECTORS[t][1][j], n = people[t][j];
     const big = document.getElementById('big');
@@ -241,7 +296,9 @@ footer p { margin: 0; }
       : `people in the directory list ${title} so far.`;
     document.getElementById('also').textContent = n
       ? 'Their names stay private until you ask for an introduction.'
-      : 'Farah can still look across the directory for someone close, through One Percent below.';
+      : 'Farah adds people most days. Save this match to come back and see who is new, or ask Farah through One Percent below.';
+    if (seekers[t][j]) document.getElementById('also').textContent += ` ${fmt(seekers[t][j])} visitors are looking for this too.`;
+    document.getElementById('saved').hidden = true;
     chipsEl.querySelectorAll('.chip').forEach(c => { const x = listed[Number(c.dataset.i)]; c.setAttribute('aria-pressed', String(x.t === t && x.j === j)); });
     const on = chipsEl.querySelector('.chip[aria-pressed="true"]');
     if (on && (on.offsetLeft < chipsEl.scrollLeft || on.offsetLeft + on.offsetWidth > chipsEl.scrollLeft + chipsEl.clientWidth)) chipsEl.scrollTo({ left: on.offsetLeft - chipsEl.offsetLeft, behavior: 'smooth' });
@@ -339,9 +396,73 @@ footer p { margin: 0; }
     ring.setAttribute('cx', h.x); ring.setAttribute('cy', h.y);
   }
 
+  // Saving a match and coming back to it. The code is the only way back: the page never asks who you are.
+  const LAST = 'ctf-last-match-code';
+  const remember = (code) => { try { localStorage.setItem(LAST, code); } catch {} };
+  const recall = () => { try { return localStorage.getItem(LAST) || ''; } catch { return ''; } };
+  const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const copyBtn = (btn, el) => {
+    btn.addEventListener('click', () => {
+      (navigator.clipboard ? navigator.clipboard.writeText(el.textContent) : Promise.reject())
+        .then(() => { btn.textContent = 'Copied'; })
+        .catch(() => { const r = document.createRange(); r.selectNodeContents(el); getSelection().removeAllRanges(); getSelection().addRange(r); btn.textContent = 'Selected'; });
+    });
+  };
+  const saveBtn = document.getElementById('save');
+  saveBtn.addEventListener('click', async () => {
+    const t = Number(sectorSel.value), j = Number(titleSel.value), box = document.getElementById('saved');
+    saveBtn.disabled = true;
+    box.hidden = false;
+    box.innerHTML = '<p>Saving…</p>';
+    try {
+      const res = await fetch('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobTitleId: ids[t][j] }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.code) throw new Error(body.error || 'The match could not be saved. Try again in a minute.');
+      remember(body.code);
+      document.getElementById('bcode').value = body.code;
+      box.innerHTML = `<p>Your code</p>
+        <div class="coderow"><span class="code" id="codeText">${esc(body.code)}</span><button class="btn ghost" type="button" id="copy">Copy</button></div>
+        <p class="also">Farah adds people most days. Come back, enter this code below, and see who is new. Keep it somewhere safe: it is the only way back, because nobody asked who you are.</p>`;
+      copyBtn(document.getElementById('copy'), document.getElementById('codeText'));
+    } catch (err) {
+      box.innerHTML = `<p>${esc(err.message)}</p>`;
+    } finally { saveBtn.disabled = false; }
+  });
+
+  const backres = document.getElementById('backres');
+  async function lookUp(raw, quiet) {
+    const code = String(raw || '').trim();
+    if (!code) return;
+    backres.innerHTML = '<p class="msg">Looking…</p>';
+    try {
+      const res = await fetch('/api/match?code=' + encodeURIComponent(code));
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'The saved match could not be read. Try again in a minute.');
+      remember(body.code);
+      const at = DATA.findIndex(([, ts]) => ts.some(x => x[2] === body.jobTitleId));
+      if (at >= 0) pick(at, DATA[at][1].findIndex(x => x[2] === body.jobTitleId));
+      const then = body.peopleAtSave, now = body.people, saved = dateFmt.format(new Date(body.savedAt));
+      let line;
+      if (now && then) line = now > then ? `${fmt(now - then)} new since you saved it on ${saved}. ${fmt(now)} people list ${body.title} now.` : `No one new yet since ${saved}. ${fmt(now)} people list ${body.title}. Farah adds people most days.`;
+      else if (now) line = `${fmt(now)} people list ${body.title} now. When you saved it on ${saved} there were fewer than 5.`;
+      else line = `Still fewer than 5 people list ${body.title}. Farah adds people most days; check back, or ask Farah through One Percent.`;
+      backres.innerHTML = `<p class="since">${esc(line)}</p>`;
+    } catch (err) {
+      backres.innerHTML = quiet ? '' : `<p class="msg">${esc(err.message)}</p>`;
+    }
+  }
+  document.getElementById('backform').addEventListener('submit', (ev) => { ev.preventDefault(); lookUp(document.getElementById('bcode').value, false); });
+
   // Open on the busiest skill that meets a daily need, so the first view shows a real match.
   const first = listed.find(x => SECTORS[x.t][1][x.j] !== 'Advocates / Awareness Raisers');
   pick(first.t, first.j);
+  // A link ending in #ABCDE-FGHJK, or a code saved on this phone, opens straight to that match.
+  if (live) {
+    const fromLink = location.hash.length > 1 ? location.hash.slice(1) : '';
+    const code = fromLink || recall();
+    if (code) { document.getElementById('bcode').value = code; lookUp(code, !fromLink); }
+  }
+}
 })();
 </script>
 </body>
