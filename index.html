@@ -130,8 +130,9 @@ footer .links a:hover, footer .links a:focus-visible { color: var(--ink); }
 .tool > .fine { margin: -8px 0 0; }
 .more { border: 1px solid var(--hair); border-radius: 12px; padding: 10px 12px; background: var(--paper); }
 .more summary { cursor: pointer; font: 600 .9rem var(--sans); color: var(--forest); }
-.more[open] { display: grid; gap: 12px; }
-.more .pair { margin-top: 10px; }
+/* Safari ignores grid on <details>, so the spacing lives on a wrapper inside it. */
+.more .morebody { display: grid; gap: 14px; margin-top: 14px; }
+.more .morebody .btn { width: 100%; }
 .split { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
 .split li { display: flex; justify-content: space-between; gap: 12px; font-size: .92rem; border-bottom: 1px dotted var(--hair); padding-bottom: 4px; }
 .split b { font: 500 .92rem var(--mono); color: var(--brass); white-space: nowrap; }
@@ -177,11 +178,13 @@ body.has-invite .wrap { padding-bottom: 260px; }
     <div class="chips" id="needs" role="group" aria-label="What you need"></div>
     <details class="more" id="more">
       <summary>Something else? Add a skill</summary>
-      <div class="pair">
-        <div class="row"><label for="sector">Kind of work</label><select id="sector"></select></div>
-        <div class="row"><label for="title">Skill</label><select id="title"></select></div>
+      <div class="morebody">
+        <div class="pair">
+          <div class="row"><label for="sector">Kind of work</label><select id="sector"></select></div>
+          <div class="row"><label for="title">Skill</label><select id="title"></select></div>
+        </div>
+        <button class="btn ghost" type="button" id="addSkill">Add this skill</button>
       </div>
-      <button class="btn ghost" type="button" id="addSkill">Add this skill</button>
     </details>
     <div class="answer" aria-live="polite">
       <p class="big" id="big"></p>
