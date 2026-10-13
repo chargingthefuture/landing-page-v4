@@ -293,6 +293,8 @@ body.has-invite .wrap { padding-bottom: 260px; }
 })();
 
 // What a visitor can say they need, and the job titles in the directory that can help with each.
+// The list follows the questions the earlier chat page asked for each part of the app (SkillUp,
+// Foundation, SocketRelay, WhatWorks, ClickLog and the rest), kept to needs a person can help with.
 // A person is counted once however many of a visitor's needs they cover.
 const NEEDS = [
   ['job', 'A job', ['Human Resources Professionals / HR Generalists', 'Vocational Trainers', 'Business Development Officers / SME Advisors', 'Community Development Officers', 'Management Consultants', 'Project Managers']],
@@ -304,11 +306,16 @@ const NEEDS = [
   ['legal', 'Legal help', ['Lawyers', 'Lawyers / Legal Consultants']],
   ['ride', 'A ride or a delivery', ['Truck Drivers', 'Delivery Drivers / Couriers', 'Bus/Train Operators', 'Mechanics']],
   ['money', 'Money and paperwork', ['Accountants', 'Financial Analysts / Accountants', 'Financial Advisors', 'Financial Literacy Trainers', 'Microfinance Officers / Loan Officers', 'Administrative & Office Support']],
-  ['learn', 'To learn a skill', ['Tutors', 'Vocational Trainers', 'Primary School Teachers', 'Secondary School Teachers', 'University Faculty', 'Financial Literacy Trainers']],
+  ['learn', 'Learn something new', ['Tutors', 'Vocational Trainers', 'Primary School Teachers', 'Secondary School Teachers', 'University Faculty', 'Financial Literacy Trainers']],
+  ['career', 'Change careers', ['Vocational Trainers', 'Human Resources Professionals / HR Generalists', 'Management Consultants', 'Business Development Officers / SME Advisors', 'Community Development Officers', 'Financial Literacy Trainers']],
   ['tech', 'Tech help', ['Software Developers', 'Software Engineers / Developers', 'Web Developers', 'IT Support Technicians', 'Tech Support / DevOps']],
   ['business', 'To start a business', ['Business Development Officers / SME Advisors', 'Marketing Specialists', 'Cooperative Managers', 'Market Linkage / Trade Facilitators', 'Social Media Managers', 'Graphic / Visual Designers']],
   ['voice', 'Someone to speak up for me', ['Advocates / Awareness Raisers', 'Journalists / Reporters', 'PR & Communications Specialists']],
   ['care', 'Hair, repairs or cleaning', ['Personal Services (hairdressers, repair)', 'Cleaners / Janitorial']],
+  ['hands', 'Tools or a hand with a job', ['Construction Laborers', 'Electricians', 'Plumbers', 'Masons', 'HVAC / Insulation Technicians', 'Maintenance Engineers', 'Maintenance Crews', 'Mechanics']],
+  ['pass', "Pass on things I don't need", ['Delivery Drivers / Couriers', 'Package Handlers / Warehouse Workers', 'Supply Managers', 'Truck Drivers']],
+  ['harass', "Harassment that won't stop", ['Cybersecurity Specialists', 'IT Security Specialists', 'Network Engineers', 'Lawyers', 'Lawyers / Legal Consultants']],
+  ['record', 'Keep a record of what happened', ['Lawyers', 'Lawyers / Legal Consultants', 'Journalists / Reporters', 'Forensic Staff', 'Advocates / Awareness Raisers']],
 ];
 
 // Counts baked in on 2026-10-13, used only when the live counts cannot be read.
