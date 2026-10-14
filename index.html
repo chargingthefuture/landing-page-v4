@@ -670,7 +670,7 @@ function boot(DATA, live) {
       const ppl = (n) => `${fmt(n)} ${n === 1 ? 'person' : 'people'}`;
       const more = now - (then || 0);
       if (more > 0) line = `${fmt(more)} more ${more === 1 ? 'person matches' : 'people match'} you than when you saved this on ${saved}. ${ppl(now)} in all.`;
-      else if (now) line = `No one new yet since ${saved}. ${ppl(now)} match you. Farah adds people most days.`;
+      else if (now) line = `Nobody added since ${saved} matches what you picked. ${live && live.total ? `${fmt(now)} of the ${fmt(live.total)} people in the directory match you.` : `${ppl(now)} match you.`} Farah adds people most days.`;
       else line = `No one matches you yet. Farah adds people most days; check back, or ask Farah through One Percent.`;
       backres.innerHTML = `<p class="since">${esc(line)}</p>`;
     } catch (err) {
