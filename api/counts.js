@@ -1,5 +1,6 @@
 // GET /api/counts — live Directory counts per job title, for the match page.
-// Reads only the two public views; any count under 5 is already blank in the database.
+// Reads only the public views. Skills coverage is optional: until its view exists or the login may
+// read it, the page keeps its written-in figure.
 import { neon } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
@@ -18,10 +19,17 @@ export default async function handler(req, res) {
            ORDER BY sector_order, sector, title_order, title`,
       sql`SELECT total FROM directory_public_totals`,
     ]);
+    const coverage = await sql`SELECT covered, catalog FROM directory_public_skill_coverage`
+      .then((rows) => rows[0] || null)
+      .catch((err) => {
+        console.error('counts: reading directory_public_skill_coverage failed:', err?.message);
+        return null;
+      });
     // Counts change a few times a day, so a five-minute copy at the edge is plenty.
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
     return res.status(200).json({
       total: totals[0]?.total ?? 0,
+      coverage: coverage ? { covered: coverage.covered, catalog: coverage.catalog } : null,
       titles: titles.map((r) => ({ id: r.job_title_id, sector: r.sector, title: r.title, people: r.people })),
     });
   } catch (err) {
