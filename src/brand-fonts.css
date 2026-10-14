@@ -1,7 +1,13 @@
 /* The landing page's type, self-hosted. Loading it from Google Fonts handed every visitor's IP
    address to Google on every visit, on a page whose promise is "no account, no name". Vite bundles
    these into this site's own files instead; the blog does the same. */
-@import "@fontsource-variable/newsreader/opsz.css";
-@import "@fontsource-variable/dm-sans/opsz.css";
+/* Fixed weights rather than the variable files: saving the page as a PDF or a screenshot on a
+   phone dropped some letters (capital R) from the variable DM Sans. */
+@import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/500.css";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/dm-sans/700.css";
 @import "@fontsource/dm-mono/400.css";
 @import "@fontsource/dm-mono/500.css";
