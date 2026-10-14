@@ -6,6 +6,7 @@
   --ink: #2a1a1d; --soft: #6e5b5e; --hair: #e6d6cd;
   --brass: #9c7631; --deep: #6b1f2e; --on-deep: #f7ece4;
   --ring: rgba(156,118,49,.28);
+  --mark-a: #c4566c; --mark-b: #6b1f2e;
   --serif: "Newsreader Variable", Georgia, serif; --sans: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif; --mono: "DM Mono", ui-monospace, Menlo, monospace;
   min-height: 100vh; background: var(--sunk); color: var(--ink); font: 400 16px/1.5 var(--sans);
 }
@@ -13,17 +14,20 @@
   --paper: #1a1113; --sunk: #110b0c; --card: #23171a;
   --ink: #f1e4dc; --soft: #b6a3a4; --hair: #3a272b;
   --brass: #d6b06c; --deep: #f0d9d1; --on-deep: #2a1218;
+  --mark-a: #e08a9b; --mark-b: #a83c55;
   --ring: rgba(214,176,108,.3); color-scheme: dark;
 } }
 :root[data-theme="dark"] .pp {
   --paper: #1a1113; --sunk: #110b0c; --card: #23171a;
   --ink: #f1e4dc; --soft: #b6a3a4; --hair: #3a272b;
   --brass: #d6b06c; --deep: #f0d9d1; --on-deep: #2a1218;
+  --mark-a: #e08a9b; --mark-b: #a83c55;
   --ring: rgba(214,176,108,.3); color-scheme: dark;
 }
 .pp-wrap { max-width: 640px; margin: 0 auto; background: var(--paper); padding-inline: 20px; padding-block: 18px 56px; display: grid; gap: 28px; min-height: 100vh; align-content: start; }
 .pp-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .85rem; }
-.pp-top a { color: var(--soft); text-decoration: none; }
+.pp-top a { color: var(--soft); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.pp-top svg { width: 24px; height: 20px; }
 .pp-theme { display: inline-flex; border: 1px solid var(--hair); border-radius: 999px; padding: 3px; background: var(--card); }
 .pp-theme button { border: 0; background: transparent; color: var(--soft); font: 600 .8rem var(--sans); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 32px; }
 .pp-theme button[aria-pressed="true"] { background: var(--deep); color: var(--on-deep); }
