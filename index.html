@@ -18,7 +18,7 @@
   --night: #170e10; --night-ink: #f1e4dc; --night-soft: #b6a3a4; --night-sea-hi: #26161a; --night-sea-lo: #0e0809; --night-grid: #452a30;
   --glow: #f0a39a; --pick: #f2c46d;
   --mark-a: #c4566c; --mark-b: #6b1f2e;
-  --serif: "Newsreader Variable", Georgia, serif; --sans: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif; --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  --serif: Newsreader, Georgia, serif; --sans: "DM Sans", ui-sans-serif, system-ui, sans-serif; --mono: "DM Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --paper: #1a1113; --sunk: #110b0c; --card: #23171a; --field: #1e1416;
@@ -113,7 +113,7 @@ footer .links a:hover, footer .links a:focus-visible { color: var(--ink); }
 </style>
 <style>
 /* Two rows that scroll sideways, so the list never takes over the screen. */
-.chips { display: grid; gap: 6px; justify-content: start; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%); }
+.chips { display: grid; gap: 6px; justify-content: start; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
 .crow { display: flex; gap: 6px; width: max-content; }
 .chips::-webkit-scrollbar { display: none; }
 .chip { border: 1px solid var(--hair); background: var(--paper); color: var(--ink); font: 500 .82rem var(--sans); border-radius: 999px; padding: 6px 11px; cursor: pointer; min-height: 34px; white-space: nowrap; }
