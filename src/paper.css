@@ -6,7 +6,7 @@
   --ink: #2a1a1d; --soft: #6e5b5e; --hair: #e6d6cd;
   --brass: #9c7631; --deep: #6b1f2e; --on-deep: #f7ece4;
   --ring: rgba(156,118,49,.28);
-  --serif: Newsreader, Georgia, serif; --sans: "DM Sans", ui-sans-serif, system-ui, sans-serif; --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  --serif: "Newsreader Variable", Georgia, serif; --sans: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif; --mono: "DM Mono", ui-monospace, Menlo, monospace;
   min-height: 100vh; background: var(--sunk); color: var(--ink); font: 400 16px/1.5 var(--sans);
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pp {

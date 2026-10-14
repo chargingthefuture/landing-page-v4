@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import "../brand-fonts.css";
 import "../paper.css";
 
 // The frame the landing page uses (index.html), for the older pages its footer links to: a link
