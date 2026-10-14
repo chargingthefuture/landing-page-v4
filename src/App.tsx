@@ -334,14 +334,15 @@ function StatMarquee({ stats = DEFAULT_STATS }: { stats?: string[] } = {}) {
 }
 
 function YouTubeFacade({ youtubeId, name, color }: { youtubeId: string; name: string; color: string }) {
+  // Nothing is requested from YouTube (a Google service) until the visitor taps play: no thumbnail,
+  // and the player comes from youtube-nocookie.com.
   const [active, setActive] = useState(false);
-  const thumb = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
 
   if (active) {
     return (
       <div className="relative w-full aspect-video border-4 border-foreground overflow-hidden">
         <iframe
-          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&playsinline=1`}
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&playsinline=1`}
           title={`${name} Demo`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -358,13 +359,7 @@ function YouTubeFacade({ youtubeId, name, color }: { youtubeId: string; name: st
       onClick={() => setActive(true)}
       aria-label={`Play ${name} demo`}
     >
-      <img
-        src={thumb}
-        alt={`${name} demo thumbnail`}
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="lazy"
-      />
-      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
+      <div className="absolute inset-0 bg-zinc-900 group-hover:bg-zinc-800 transition-colors" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
         <div
           className="w-16 h-16 border-4 border-black flex items-center justify-center brutal-shadow transition-transform group-hover:scale-110 group-focus-visible:scale-110"
@@ -588,12 +583,7 @@ function LandingPage() {
                 style={{ background: feat.bg, boxShadow: `4px 4px 0px 0px ${feat.color}` }}
               >
                 {feat.youtubeId && (
-                  <div className="relative w-full aspect-video overflow-hidden border-b-4 border-foreground">
-                    <img
-                      src={`https://img.youtube.com/vi/${feat.youtubeId}/mqdefault.jpg`}
-                      alt={`${feat.name} demo`}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative w-full aspect-video overflow-hidden border-b-4 border-foreground bg-zinc-900">
                     <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                       <div
                         className="w-10 h-10 border-2 border-white flex items-center justify-center"
