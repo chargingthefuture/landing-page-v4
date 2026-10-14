@@ -333,67 +333,6 @@ function StatMarquee({ stats = DEFAULT_STATS }: { stats?: string[] } = {}) {
   );
 }
 
-function YouTubeFacade({ youtubeId, name, color }: { youtubeId: string; name: string; color: string }) {
-  // Nothing is requested from YouTube (a Google service) until the visitor taps play: no thumbnail,
-  // and the player comes from youtube-nocookie.com.
-  const [active, setActive] = useState(false);
-
-  if (active) {
-    return (
-      <div className="relative w-full aspect-video border-4 border-foreground overflow-hidden">
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&playsinline=1`}
-          title={`${name} Demo`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="absolute inset-0 w-full h-full"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      className="relative w-full aspect-video border-4 border-foreground overflow-hidden cursor-pointer group focus:outline-none focus-visible:ring-4 focus-visible:ring-white"
-      onClick={() => setActive(true)}
-      aria-label={`Play ${name} demo`}
-    >
-      <div className="absolute inset-0 bg-zinc-900 group-hover:bg-zinc-800 transition-colors" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-        <div
-          className="w-16 h-16 border-4 border-black flex items-center justify-center brutal-shadow transition-transform group-hover:scale-110 group-focus-visible:scale-110"
-          style={{ background: color }}
-        >
-          <Play size={24} fill="black" className="text-black ml-1" />
-        </div>
-        <span className="font-bold text-xs uppercase tracking-widest text-white/80">{name} Demo</span>
-      </div>
-    </button>
-  );
-}
-
-function VideoPlaceholder({ name, color }: { name: string; color: string }) {
-  return (
-    <div className="relative w-full aspect-video border-4 border-foreground bg-zinc-900 overflow-hidden group cursor-pointer">
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
-        <div
-          className="w-16 h-16 border-4 border-black flex items-center justify-center brutal-shadow transition-transform group-hover:scale-110"
-          style={{ background: color }}
-        >
-          <Play size={24} fill="black" className="text-black ml-1" />
-        </div>
-        <span className="font-bold text-xs uppercase tracking-widest text-white/60">{name} Demo</span>
-      </div>
-      <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${color}18 0%, #000 100%)` }} />
-      <div className="absolute bottom-2 left-3 right-3 flex justify-between text-xs font-bold uppercase text-white/25">
-        <span>YouTube Demo</span>
-        <span>Coming Soon</span>
-      </div>
-    </div>
-  );
-}
-
 function ServiceCreditsBounty() {
   return (
     <a
@@ -692,100 +631,90 @@ function DemosPage() {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-sans">
-      <NavBar />
-
-      <div className="pt-32 pb-8 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="inline-block border-4 border-secondary bg-secondary/10 text-secondary font-bold px-4 py-2 uppercase tracking-widest mb-6 brutal-shadow text-sm">
-            The Arsenal — All {FEATURES.length}
-          </div>
-          <h1 className="text-4xl sm:text-6xl md:text-8xl font-display uppercase mb-6 leading-[0.9]">
-            {FEATURES.length} Apps.<br /><span className="text-secondary">One</span> Account.<br />All Demos.
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mb-4 leading-relaxed">
-            Every feature of Skills Economy has its own walkthrough demo. Watch how each tool works — built by survivors, for survivors.
-          </p>
-          <a href={APP_URL} className="inline-flex items-center gap-2 text-primary font-bold uppercase tracking-widest text-sm underline decoration-2 underline-offset-4 hover:text-white transition-colors">
-            Ready? Open the App <ArrowRight size={14} />
+    <PaperShell>
+      <header className="pp-hero">
+        <p className="pp-eyebrow">The Arsenal — All {FEATURES.length}</p>
+        <h1>
+          {FEATURES.length} Apps. One Account. All Demos.
+        </h1>
+        <p className="pp-lede">
+          Every feature of Skills Economy has its own walkthrough demo. Watch how each tool works — built by survivors, for survivors.
+        </p>
+        <p className="pp-note">
+          <a href={APP_URL} className="pp-inline">
+            Ready? Open the App
           </a>
-        </motion.div>
-      </div>
+        </p>
+      </header>
 
-      <div className="px-6 md:px-12 lg:px-24 pb-24 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {FEATURES.map((feat, i) => (
-            <motion.div
-              key={feat.id}
-              id={feat.id}
-              initial={{ opacity: 0, scale: 0.97 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: (i % 3) * 0.08 }}
-              className="border-4 border-foreground flex flex-col h-full hover:-translate-y-1 hover:-translate-x-[2px] transition-all duration-200"
-              style={{ background: feat.bg, boxShadow: `6px 6px 0px 0px ${feat.color}` }}
-            >
-              <div className="p-6 flex items-center gap-4 border-b-4 border-foreground">
-                <div
-                  className="w-12 h-12 border-4 border-foreground flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${feat.color}25` }}
-                >
-                  <feat.icon size={24} style={{ color: feat.color }} />
-                </div>
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                    App {String(i + 1).padStart(2, "0")} of {FEATURES.length}
-                  </div>
-                  <h3 className="text-2xl font-display uppercase leading-none" style={{ color: feat.color }}>
-                    {feat.emoji} {feat.name}
-                  </h3>
-                </div>
+      <ol className="pp-list">
+        {FEATURES.map((feat, i) => (
+          <li key={feat.id} id={feat.id} className="pp-item pp-demo">
+            <div className="pp-demo-head">
+              <span className="pp-demo-icon" aria-hidden="true">
+                <feat.icon size={20} />
+              </span>
+              <div>
+                <p className="pp-label">
+                  App {String(i + 1).padStart(2, "0")} of {FEATURES.length}
+                </p>
+                <h2>
+                  {feat.emoji} {feat.name}
+                </h2>
               </div>
-              <div className="p-6 flex-grow">
-                <p className="text-muted-foreground text-base leading-relaxed">{feat.desc}</p>
+            </div>
+            <p className="pp-demo-desc">{feat.desc}</p>
+            {feat.youtubeId ? (
+              <DemoVideo youtubeId={feat.youtubeId} name={feat.name} />
+            ) : feat.protonLink ? (
+              <a href={feat.protonLink} target="_blank" rel="noopener noreferrer" className="pp-btn">
+                Watch Demo <ArrowRight size={18} />
+              </a>
+            ) : (
+              <div className="pp-video pp-video-empty">
+                <span>{feat.name} Demo</span>
+                <span className="pp-label">Coming Soon</span>
               </div>
-              <div className="px-6 pb-6">
-                {feat.youtubeId ? (
-                  <YouTubeFacade youtubeId={feat.youtubeId} name={feat.name} color={feat.color} />
-                ) : feat.protonLink ? (
-                  <div className="relative w-full aspect-video border-4 border-foreground bg-zinc-900 overflow-hidden flex items-center justify-center"
-                    style={{ background: `linear-gradient(135deg, ${feat.color}18 0%, #000 100%)` }}>
-                    <a
-                      href={feat.protonLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-3 border-4 border-foreground font-bold uppercase tracking-widest px-6 py-4 text-base transition-all hover:-translate-y-1"
-                      style={{ background: feat.color, color: "#000", boxShadow: `4px 4px 0px 0px #fff` }}
-                    >
-                      Watch Demo <ArrowRight size={18} strokeWidth={3} />
-                    </a>
-                  </div>
-                ) : (
-                  <VideoPlaceholder name={feat.name} color={feat.color} />
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+            )}
+          </li>
+        ))}
+      </ol>
 
-      <section className="py-20 px-6 md:px-12 bg-secondary border-t-4 border-foreground text-white text-center relative overflow-hidden">
-        <div className="max-w-3xl mx-auto relative z-10">
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-display uppercase mb-6 leading-[0.9]">
-            Seen enough?<br /><span className="text-primary">Join us.</span>
-          </h2>
-          <a
-            href={APP_URL}
-            className="inline-flex items-center gap-3 brutal-border bg-primary text-black font-bold py-4 px-8 md:py-5 md:px-10 text-lg md:text-xl uppercase tracking-widest brutal-shadow hover:-translate-y-1 transition-transform"
-          >
-            Claim Your Access <ArrowRight strokeWidth={3} size={22} />
+      <section className="pp-next">
+        <h2>Seen enough? Join us.</h2>
+        <div className="pp-btns">
+          <a href={APP_URL} className="pp-btn">
+            Claim Your Access <ArrowRight size={18} />
           </a>
         </div>
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
       </section>
+    </PaperShell>
+  );
+}
 
-      <Footer />
-    </div>
+// Nothing is requested from YouTube (a Google service) until the visitor taps play: no thumbnail,
+// and the player comes from youtube-nocookie.com.
+function DemoVideo({ youtubeId, name }: { youtubeId: string; name: string }) {
+  const [active, setActive] = useState(false);
+  if (active) {
+    return (
+      <div className="pp-video">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&playsinline=1`}
+          title={`${name} Demo`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+  return (
+    <button type="button" className="pp-video" onClick={() => setActive(true)} aria-label={`Play ${name} demo`}>
+      <span className="pp-play" aria-hidden="true">
+        <Play size={22} fill="currentColor" />
+      </span>
+      <span className="pp-label">{name} Demo</span>
+    </button>
   );
 }
 
