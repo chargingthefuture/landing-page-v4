@@ -1,2 +1,9 @@
+# Quora's link-preview fetcher is turned away, so an address pasted into a Quora post stays as
+# typed instead of being rewritten into the page title. Search engines are unaffected.
+User-agent: Quora-Bot
+User-agent: QuoraBot
+User-agent: Quora Link Preview
+Disallow: /
+
 User-agent: *
 Allow: /
