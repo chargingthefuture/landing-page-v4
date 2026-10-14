@@ -630,12 +630,12 @@ function boot(DATA, live) {
     box.hidden = false;
     box.innerHTML = '<p>Saving…</p>';
     try {
-      const res = await fetch('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobTitleIds: ids }) });
+      const res = await fetch('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobTitleIds: ids, code: recall() || undefined }) });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.code) throw new Error(body.error || 'The match could not be saved. Try again in a minute.');
       remember(body.code);
       document.getElementById('bcode').value = body.code;
-      box.innerHTML = `<p>Your code</p>
+      box.innerHTML = `<p>${body.updated ? 'Your code is the same. It now holds what you picked.' : 'Your code'}</p>
         <div class="coderow"><span class="code" id="codeText">${esc(body.code)}</span><button class="btn ghost" type="button" id="copy">Copy</button></div>
         <p class="also">Farah adds people most days. Come back, enter this code below, and see how many more match you. Keep it somewhere safe: it is the only way back, because nobody asked who you are.</p>`;
       copyBtn(document.getElementById('copy'), document.getElementById('codeText'));

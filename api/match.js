@@ -1,4 +1,5 @@
-// POST /api/match { jobTitleIds } — saves what a visitor needs, as job titles, and returns its code.
+// POST /api/match { jobTitleIds, code? } — saves what a visitor needs, as job titles, and returns its code.
+// With the code this phone already holds, it updates that saved match instead of making a second code.
 // GET  /api/match?code=ABCDE-FGHJK — returns the saved titles with today's match count beside the count when saved.
 // A saved match holds the code, the job titles and the count; never a name, contact detail or IP address.
 import { randomInt } from 'node:crypto';
@@ -32,7 +33,8 @@ export default async function handler(req, res) {
   const sql = neon(process.env.DATABASE_URL);
 
   if (req.method === 'POST') {
-    const asked = (Array.isArray(readBody(req).jobTitleIds) ? readBody(req).jobTitleIds : [])
+    const body = readBody(req);
+    const asked = (Array.isArray(body.jobTitleIds) ? body.jobTitleIds : [])
       .map((x) => String(x).slice(0, 64)).filter(Boolean).slice(0, 60);
     if (!asked.length) return res.status(400).json({ error: 'Pick what you need before saving.' });
     try {
@@ -41,6 +43,20 @@ export default async function handler(req, res) {
       const ids = [...new Set(asked.filter((id) => known.has(id)))];
       if (!ids.length) return res.status(400).json({ error: 'None of those needs are in the list. Pick again and save.' });
       const count = (await sql`SELECT directory_public_match_count(${ids}::text[]) AS n`)[0]?.n ?? null;
+      // One code per visitor: re-saving with the code they hold keeps it and replaces what it holds,
+      // and "since" starts again from today. Without the update grant, or for an unknown code, a new
+      // code is made as before.
+      const held = normalizeCode(body.code);
+      if (held) {
+        try {
+          const kept = await sql`UPDATE directory_landing_match_codes
+                                    SET job_title_id = ${ids[0]}, job_title_ids = ${ids}::text[], people_at_save = ${count}, created_at = NOW()
+                                  WHERE code = ${held} RETURNING code`;
+          if (kept.length) return res.status(200).json({ code: held, people: count, updated: true });
+        } catch (err) {
+          console.error('match: updating the held code failed, making a new one:', err?.message);
+        }
+      }
       // A code collision is very unlikely; try a few times rather than fail.
       for (let attempt = 0; attempt < 4; attempt++) {
         const code = makeCode();
