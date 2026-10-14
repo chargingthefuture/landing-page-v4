@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { InviteStrip } from "@/components/InviteStrip";
+import { PaperShell } from "@/components/PaperShell";
 import { Switch, Route, Router as WouterRouter, Link, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -179,32 +180,6 @@ const SCHEMES: { name: string; desc: string }[] = [
   { name: "The Forced Homecoming", desc: "They make you destitute until the only roof left belongs to family who abuse you — and now you depend on them for money. Then they saturate the address: the neighborhood bought up, full-timers circling all day, and the family itself paid in perks, jobs, friends and sex to run the harassment from inside the house. It hands them two things. Grading your days gets easy when one of them lives with you. And it is the cheapest way to get you labeled mentally ill or dangerous, because you are isolated with your abusers and there is no witness who isn't on their payroll. Farah has had this tried on her repeatedly for over a decade and strongly discourages the arrangement: it is where the worst outcomes happen, because the harassment never stops and there is nowhere in the house to go." },
   { name: "Not listed", desc: "A scheme that doesn't fit the named list yet. Weavers of the Commons can pick it in ClickLog and describe what happened — that description goes to the owner, and it's how new schemes earn a name." },
 ];
-
-// Map feature names to their colors for the solution badges
-const FEATURE_COLOR_MAP: Record<string, string> = {
-  "Commons":        "#7C3AED",
-  "Chyme":          "#22C55E",
-  "LightHouse":     "#3B82F6",
-  "Lighthouse":     "#3B82F6",
-  "TrustTransport": "#67E8F9",
-  "Directory":      "#93C5FD",
-  "Foundation":     "#F59E0B",
-  "PeerProgramming": "#16A34A",
-  "GDP":            "#06B6D4",
-  "ServiceCredits": "#A855F7",
-  "Workforce":      "#F97316",
-  "Mood":           "#BEF264",
-  "SocketRelay":    "#FDBA74",
-  "WhatWorks":      "#84CC16",
-  "SkillsHunt":     "#FACC15",
-  "SkillUp":        "#10B981",
-  "Trust":          "#0EA5E9",
-  "ClickLog":       "#EC4899",
-  "Skills Taxonomy": "#8B5CF6",
-  "Contributions":  "#FB7185",
-  "Beacon":         "#B91C1C",
-  "Recurring Activity": "#14B8A6",
-};
 
 // Map feature names to their live app URLs for the solution badges. Signed-out
 // visitors on the Look Ma page tap a badge to open that feature in the app.
@@ -828,144 +803,68 @@ function LookMaPage() {
   const [active, setActive] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-sans">
-      <NavBar />
+    <PaperShell>
+      <header className="pp-hero">
+        <p className="pp-eyebrow">You're Not Imagining It</p>
+        <h1>Look Ma, I Fixed It!</h1>
+        <p className="pp-lede">
+          50+ problems. 50+ answers. Everything you've experienced — the stalking, the workplace sabotage, the neighbors, the lights, the vehicles — we built a feature in Skills Economy for every single one. Click any problem to see the fix.
+        </p>
+        <p className="pp-note">
+          This list is what you notice, and each item points to the feature that answers it. For
+          the play behind the problem — what they were running and why — every one of those has a
+          name on{" "}
+          <Link href="/schemes" className="pp-inline">
+            The Schemes
+          </Link>
+          .
+        </p>
+      </header>
 
-      <section className="pt-32 pb-12 px-6 md:px-12 lg:px-24 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] rounded-full bg-accent/10 blur-[120px] pointer-events-none" />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="inline-block border-4 border-accent bg-accent/10 text-accent font-bold px-4 py-2 uppercase tracking-widest mb-6 brutal-shadow text-sm">
-              You're Not Imagining It
-            </div>
-            <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-display uppercase mb-6 md:mb-8 leading-[0.88]">
-              <span className="text-accent">Look Ma,</span><br />I Fixed It!
-            </h1>
-            <p className="text-base md:text-xl lg:text-2xl text-muted-foreground max-w-3xl leading-relaxed">
-              50+ problems. 50+ answers. Everything you've experienced — the stalking, the workplace sabotage, the neighbors, the lights, the vehicles — we built a feature in Skills Economy for every single one. Click any problem to see the fix.
-            </p>
-            <p className="text-sm md:text-base text-muted-foreground max-w-3xl leading-relaxed mt-4">
-              This list is what you notice, and each item points to the feature that answers it. For
-              the play behind the problem — what they were running and why — every one of those has a
-              name on{" "}
-              <Link href="/schemes" className="text-accent underline underline-offset-4 hover:opacity-80">
-                The Schemes
-              </Link>
-              .
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="px-6 md:px-12 lg:px-24 pb-20 max-w-7xl mx-auto">
-        <div className="flex flex-col gap-3">
-          {LOOK_MA_ITEMS.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: Math.min(i * 0.03, 0.4) }}
-              className="border-4 border-foreground bg-card cursor-pointer transition-all duration-200"
-              style={active === i ? { boxShadow: `6px 6px 0px 0px hsl(var(--accent))` } : { boxShadow: `4px 4px 0px 0px hsl(var(--foreground))` }}
-              onClick={() => setActive(active === i ? null : i)}
-            >
-              <div className="p-5 md:p-6 flex justify-between items-center gap-4">
-                <div className="flex items-start gap-4">
-                  <span className="font-display text-3xl text-accent flex-shrink-0 leading-none mt-1 min-w-[2rem]">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="font-bold text-base md:text-lg leading-snug">
-                    {item.q}
-                  </h3>
-                </div>
-                <div
-                  className="w-9 h-9 flex-shrink-0 flex items-center justify-center border-4 border-foreground text-xl font-bold transition-all duration-300"
-                  style={active === i ? { background: "hsl(var(--accent))", color: "black", transform: "rotate(45deg)" } : {}}
-                >
-                  +
+      <ol className="pp-list">
+        {LOOK_MA_ITEMS.map((item, i) => (
+          <li key={i} className="pp-item" data-open={active === i}>
+            <button type="button" aria-expanded={active === i} onClick={() => setActive(active === i ? null : i)}>
+              <span className="pp-num">{String(i + 1).padStart(2, "0")}</span>
+              <span className="pp-q">{item.q}</span>
+              <span className="pp-plus" aria-hidden="true">+</span>
+            </button>
+            {active === i && (
+              <div className="pp-body">
+                <p className="pp-label">Fixed by:</p>
+                <div className="pp-pills">
+                  {item.solutions.map((sol) => {
+                    const url = FEATURE_URL_MAP[sol];
+                    return url ? (
+                      <a key={sol} href={url} target="_blank" rel="noopener noreferrer" className="pp-pill">
+                        {sol}
+                      </a>
+                    ) : (
+                      <span key={sol} className="pp-pill">
+                        {sol}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
+            )}
+          </li>
+        ))}
+      </ol>
 
-              <AnimatePresence>
-                {active === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="border-t-4 border-foreground bg-accent/10 p-5 md:p-6">
-                      <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-3">Fixed by:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {item.solutions.map((sol) => {
-                          const c = FEATURE_COLOR_MAP[sol] || "#9CA3AF";
-                          const url = FEATURE_URL_MAP[sol];
-                          if (url) {
-                            return (
-                              <a
-                                key={sol}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="font-bold px-3 py-1 text-sm uppercase tracking-widest border-2 transition-transform hover:-translate-y-0.5"
-                                style={{ borderColor: c, color: c, background: `${c}18` }}
-                              >
-                                {sol}
-                              </a>
-                            );
-                          }
-                          return (
-                            <span
-                              key={sol}
-                              className="font-bold px-3 py-1 text-sm uppercase tracking-widest border-2"
-                              style={{ borderColor: c, color: c, background: `${c}18` }}
-                            >
-                              {sol}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
+      <section className="pp-next">
+        <h2>Want to see all {FEATURES.length} apps in action?</h2>
+        <p>Every feature above has a full walkthrough demo. Watch how it works before you join.</p>
+        <div className="pp-btns">
+          <Link href="/demos" className="pp-btn">
+            Watch All {FEATURES.length} Demos <ArrowRight size={18} />
+          </Link>
+          <a href={APP_URL} className="pp-btn ghost">
+            Join The App <ArrowRight size={18} />
+          </a>
         </div>
       </section>
-
-      <section className="py-20 px-6 md:px-12 lg:px-24 border-t-4 border-foreground bg-card/40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <h2 className="text-4xl md:text-5xl font-display uppercase mb-4 leading-[0.9]">
-              Want to see<br /><span className="text-primary">all {FEATURES.length} apps</span> in action?
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-lg">
-              Every feature above has a full walkthrough demo. Watch how it works before you join.
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 flex-shrink-0">
-            <Link
-              href="/demos"
-              className="brutal-border brutal-shadow-primary brutal-shadow-hover bg-primary text-black font-bold py-4 px-8 text-lg uppercase tracking-widest flex items-center justify-center gap-3"
-            >
-              Watch All {FEATURES.length} Demos <ArrowRight strokeWidth={3} />
-            </Link>
-            <a
-              href={APP_URL}
-              className="brutal-border brutal-shadow brutal-shadow-hover bg-transparent text-foreground font-bold py-4 px-8 text-lg uppercase tracking-widest flex items-center justify-center gap-3"
-            >
-              Join The App <ArrowRight strokeWidth={3} />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
-    </div>
+    </PaperShell>
   );
 }
 
@@ -973,132 +872,67 @@ function SchemesPage() {
   const [active, setActive] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-sans">
-      <NavBar />
+    <PaperShell>
+      <header className="pp-hero">
+        <p className="pp-eyebrow">Know Their Playbook</p>
+        <h1>The Schemes</h1>
+        <p className="pp-lede">
+          Every scheme has a name. These are the plays run on survivors — cataloged so you can
+          recognize them, name them, and log them. The names below match the scheme tags in
+          ClickLog, the incident log inside Skills Economy: tag an incident with the scheme
+          used (and the problem it caused) and it feeds the trend reporting. Click a scheme to
+          see how it works.
+        </p>
+        <p className="pp-note">
+          These are the plays behind the problems on{" "}
+          <Link href="/look-ma" className="pp-inline">
+            Look Ma, I Fixed It
+          </Link>
+          : that list is what you notice, this one is what they are doing and why. Logging them
+          in ClickLog is what turns single incidents into a picture of what is happening, and
+          where.
+        </p>
+      </header>
 
-      <section className="pt-32 pb-12 px-6 md:px-12 lg:px-24 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] rounded-full bg-accent/10 blur-[120px] pointer-events-none" />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="inline-block border-4 border-accent bg-accent/10 text-accent font-bold px-4 py-2 uppercase tracking-widest mb-6 brutal-shadow text-sm">
-              Know Their Playbook
-            </div>
-            <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-display uppercase mb-6 md:mb-8 leading-[0.88]">
-              <span className="text-accent">The</span> Schemes
-            </h1>
-            <p className="text-base md:text-xl lg:text-2xl text-muted-foreground max-w-3xl leading-relaxed">
-              Every scheme has a name. These are the plays run on survivors — cataloged so you can
-              recognize them, name them, and log them. The names below match the scheme tags in
-              ClickLog, the incident log inside Skills Economy: tag an incident with the scheme
-              used (and the problem it caused) and it feeds the trend reporting. Click a scheme to
-              see how it works.
-            </p>
-            <p className="text-sm md:text-base text-muted-foreground max-w-3xl leading-relaxed mt-4">
-              These are the plays behind the problems on{" "}
-              <Link href="/look-ma" className="text-accent underline underline-offset-4 hover:opacity-80">
-                Look Ma, I Fixed It
-              </Link>
-              : that list is what you notice, this one is what they are doing and why. Logging them
-              in ClickLog is what turns single incidents into a picture of what is happening, and
-              where.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="px-6 md:px-12 lg:px-24 pb-20 max-w-7xl mx-auto">
-        <div className="flex flex-col gap-3">
-          {SCHEMES.map((scheme, i) => (
-            <motion.div
-              key={scheme.name}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: Math.min(i * 0.03, 0.4) }}
-              className="border-4 border-foreground bg-card cursor-pointer transition-all duration-200"
-              style={active === i ? { boxShadow: `6px 6px 0px 0px hsl(var(--accent))` } : { boxShadow: `4px 4px 0px 0px hsl(var(--foreground))` }}
-              onClick={() => setActive(active === i ? null : i)}
-            >
-              <div className="p-5 md:p-6 flex justify-between items-center gap-4">
-                <div className="flex items-start gap-4">
-                  <span className="font-display text-3xl text-accent flex-shrink-0 leading-none mt-1 min-w-[2rem]">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="font-bold text-base md:text-lg leading-snug">
-                    {scheme.name}
-                  </h3>
-                </div>
-                <div
-                  className="w-9 h-9 flex-shrink-0 flex items-center justify-center border-4 border-foreground text-xl font-bold transition-all duration-300"
-                  style={active === i ? { background: "hsl(var(--accent))", color: "black", transform: "rotate(45deg)" } : {}}
-                >
-                  +
+      <ol className="pp-list">
+        {SCHEMES.map((scheme, i) => (
+          <li key={scheme.name} className="pp-item" data-open={active === i}>
+            <button type="button" aria-expanded={active === i} onClick={() => setActive(active === i ? null : i)}>
+              <span className="pp-num">{String(i + 1).padStart(2, "0")}</span>
+              <span className="pp-q">{scheme.name}</span>
+              <span className="pp-plus" aria-hidden="true">+</span>
+            </button>
+            {active === i && (
+              <div className="pp-body">
+                <p>{scheme.desc}</p>
+                <div className="pp-pills">
+                  <a href={CLICKLOG_URL} target="_blank" rel="noopener noreferrer" className="pp-pill">
+                    <AlertTriangle size={14} /> Log it in ClickLog
+                  </a>
                 </div>
               </div>
+            )}
+          </li>
+        ))}
+      </ol>
+      <p className="pp-note">
+        This list grows as new schemes get named. The in-app ClickLog tag list is the canonical
+        version — this page mirrors it one-for-one.
+      </p>
 
-              <AnimatePresence>
-                {active === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="border-t-4 border-foreground bg-accent/10 p-5 md:p-6">
-                      <p className="text-sm md:text-base leading-relaxed mb-4">{scheme.desc}</p>
-                      <a
-                        href={CLICKLOG_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="font-bold px-3 py-1 text-sm uppercase tracking-widest border-2 inline-flex items-center gap-2 transition-transform hover:-translate-y-0.5"
-                        style={{ borderColor: "#EC4899", color: "#EC4899", background: "#EC489918" }}
-                      >
-                        <AlertTriangle size={14} /> Log it in ClickLog
-                      </a>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
-        <p className="text-sm text-muted-foreground mt-6 leading-relaxed">
-          This list grows as new schemes get named. The in-app ClickLog tag list is the canonical
-          version — this page mirrors it one-for-one.
-        </p>
-      </section>
-
-      <section className="py-20 px-6 md:px-12 lg:px-24 border-t-4 border-foreground bg-card/40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <h2 className="text-4xl md:text-5xl font-display uppercase mb-4 leading-[0.9]">
-              Schemes cause<br /><span className="text-primary">problems.</span> We fixed those too.
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-lg">
-              50+ problems survivors experience — and the feature built to answer every single one.
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 flex-shrink-0">
-            <Link
-              href="/look-ma"
-              className="brutal-border brutal-shadow-primary brutal-shadow-hover bg-primary text-black font-bold py-4 px-8 text-lg uppercase tracking-widest flex items-center justify-center gap-3"
-            >
-              See The 50+ Problems <ArrowRight strokeWidth={3} />
-            </Link>
-            <a
-              href={APP_URL}
-              className="brutal-border brutal-shadow brutal-shadow-hover bg-transparent text-foreground font-bold py-4 px-8 text-lg uppercase tracking-widest flex items-center justify-center gap-3"
-            >
-              Join The App <ArrowRight strokeWidth={3} />
-            </a>
-          </div>
+      <section className="pp-next">
+        <h2>Schemes cause problems. We fixed those too.</h2>
+        <p>50+ problems survivors experience — and the feature built to answer every single one.</p>
+        <div className="pp-btns">
+          <Link href="/look-ma" className="pp-btn">
+            See The 50+ Problems <ArrowRight size={18} />
+          </Link>
+          <a href={APP_URL} className="pp-btn ghost">
+            Join The App <ArrowRight size={18} />
+          </a>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </PaperShell>
   );
 }
 

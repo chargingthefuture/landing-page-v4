@@ -1,0 +1,63 @@
+/* The landing page's design, for the older pages the footer still links to (/look-ma, /schemes).
+   Tokens copy index.html's :root; change both together. Burgundy is the free tier's color;
+   farahbrunache.com keeps forest green on the same design. */
+.pp {
+  --paper: #f6efe8; --sunk: #ede2d9; --card: #fffaf6;
+  --ink: #2a1a1d; --soft: #6e5b5e; --hair: #e6d6cd;
+  --brass: #9c7631; --deep: #6b1f2e; --on-deep: #f7ece4;
+  --ring: rgba(156,118,49,.28);
+  --serif: Newsreader, Georgia, serif; --sans: "DM Sans", ui-sans-serif, system-ui, sans-serif; --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  min-height: 100vh; background: var(--sunk); color: var(--ink); font: 400 16px/1.5 var(--sans);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pp {
+  --paper: #1a1113; --sunk: #110b0c; --card: #23171a;
+  --ink: #f1e4dc; --soft: #b6a3a4; --hair: #3a272b;
+  --brass: #d6b06c; --deep: #f0d9d1; --on-deep: #2a1218;
+  --ring: rgba(214,176,108,.3); color-scheme: dark;
+} }
+:root[data-theme="dark"] .pp {
+  --paper: #1a1113; --sunk: #110b0c; --card: #23171a;
+  --ink: #f1e4dc; --soft: #b6a3a4; --hair: #3a272b;
+  --brass: #d6b06c; --deep: #f0d9d1; --on-deep: #2a1218;
+  --ring: rgba(214,176,108,.3); color-scheme: dark;
+}
+.pp-wrap { max-width: 640px; margin: 0 auto; background: var(--paper); padding-inline: 20px; padding-block: 18px 56px; display: grid; gap: 28px; min-height: 100vh; align-content: start; }
+.pp-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .85rem; }
+.pp-top a { color: var(--soft); text-decoration: none; }
+.pp-theme { display: inline-flex; border: 1px solid var(--hair); border-radius: 999px; padding: 3px; background: var(--card); }
+.pp-theme button { border: 0; background: transparent; color: var(--soft); font: 600 .8rem var(--sans); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 32px; }
+.pp-theme button[aria-pressed="true"] { background: var(--deep); color: var(--on-deep); }
+.pp a:focus-visible, .pp button:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+.pp-hero { display: grid; gap: 10px; }
+.pp-eyebrow { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
+.pp h1 { margin: 0; font: 500 clamp(2rem, 8vw, 2.8rem)/1.05 var(--serif); letter-spacing: -.015em; text-wrap: balance; }
+.pp h2 { margin: 0; font: 500 1.4rem/1.15 var(--serif); text-wrap: balance; }
+.pp-lede { margin: 0; color: var(--soft); font-size: 1.05rem; }
+.pp-note { margin: 0; color: var(--soft); font-size: .92rem; }
+.pp-inline { color: var(--deep); text-decoration: underline; text-underline-offset: 3px; }
+
+.pp-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pp-item { background: var(--card); border: 1px solid var(--hair); border-radius: 14px; overflow: hidden; }
+.pp-item > button { width: 100%; display: flex; align-items: flex-start; gap: 12px; text-align: left; background: transparent; border: 0; color: var(--ink); padding: 14px 16px; cursor: pointer; font: 500 1rem/1.35 var(--sans); }
+.pp-num { font: 500 .82rem/1.6 var(--mono); color: var(--brass); min-width: 1.6rem; }
+.pp-q { flex: 1; }
+.pp-plus { font: 400 1.3rem/1 var(--sans); color: var(--deep); transition: transform .2s; }
+.pp-item[data-open="true"] .pp-plus { transform: rotate(45deg); }
+.pp-body { border-top: 1px solid var(--hair); padding: 14px 16px 16px; display: grid; gap: 10px; }
+.pp-body p { margin: 0; }
+.pp-label { font: 600 .7rem var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--soft); }
+.pp-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pp-pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--deep); color: var(--deep); border-radius: 999px; padding: 4px 11px; font: 600 .82rem var(--sans); text-decoration: none; }
+a.pp-pill:hover { background: var(--deep); color: var(--on-deep); }
+
+.pp-next { display: grid; gap: 12px; background: var(--card); border: 1px solid var(--hair); border-radius: 16px; padding: 18px 16px; }
+.pp-next p { margin: 0; color: var(--soft); }
+.pp-btns { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; border: 1px solid var(--deep); background: var(--deep); color: var(--on-deep); font: 600 .95rem var(--sans); border-radius: 12px; min-height: 46px; padding: 10px 16px; text-align: center; }
+.pp-btn.ghost { background: transparent; color: var(--deep); }
+
+.pp-foot { font-size: .8rem; color: var(--soft); display: grid; gap: 14px; border-top: 1px solid var(--hair); padding-top: 16px; }
+.pp-foot nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.pp-foot a { color: var(--soft); text-decoration: none; font: 600 .74rem var(--sans); letter-spacing: .08em; text-transform: uppercase; }
+.pp-foot a:hover, .pp-foot a:focus-visible { color: var(--ink); }
