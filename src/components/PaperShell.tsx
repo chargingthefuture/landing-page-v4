@@ -70,7 +70,7 @@ export function PaperShell({ children }: { children: ReactNode }) {
         </div>
         {children}
         <footer className="pp-foot">
-          <nav aria-label="More from Charging The Future">
+          <nav aria-label="More from Skills Economy">
             <a href="/look-ma">Look Ma, I Fixed It</a>
             <a href="/schemes">The Schemes</a>
             <a href="https://chargingthefuture.github.io/chargingthefuture/feed">People on the list</a>

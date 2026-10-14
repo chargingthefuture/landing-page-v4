@@ -252,7 +252,7 @@ function NavBar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b-4 border-foreground">
       <div className="flex justify-between items-center px-6 py-4">
         <Link href="/" className="text-2xl md:text-3xl font-display uppercase tracking-wider hover:opacity-80 transition-opacity">
-          <span className="text-primary">Charging</span> The Future
+          <span className="text-primary">Skills</span> Economy
         </Link>
         <div className="hidden md:flex items-center gap-1">
           {links.map(({ href, label }) => (
@@ -443,7 +443,7 @@ function Footer() {
     <footer className="bg-background py-12 px-6 border-t-4 border-foreground">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="font-display text-3xl uppercase tracking-wider">
-          <span className="text-primary">Charging</span> The Future
+          <span className="text-primary">Skills</span> Economy
         </div>
         <div className="flex flex-wrap gap-4 text-sm font-bold uppercase tracking-widest text-muted-foreground">
           <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
