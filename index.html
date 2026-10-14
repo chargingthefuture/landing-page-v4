@@ -180,7 +180,7 @@ body.has-invite .wrap { padding-bottom: 260px; }
 
   <section class="tool" aria-labelledby="tooltitle">
     <h2 id="tooltitle">What do you need?</h2>
-    <p class="fine">Tap all that apply. You'll see how many people in the directory match you.</p>
+    <p class="fine">Tap all that apply, and tap again to remove one. Slide the list sideways to see more. You'll see how many people in the directory match you.</p>
     <div class="chips" id="needs" role="group" aria-label="What you need"></div>
     <details class="more" id="more">
       <summary>Something else? Add a skill</summary>
@@ -429,6 +429,9 @@ function boot(DATA, live) {
   function addSkill(t, j) {
     extra.add(SECTORS[t][1][j]);
     drawChips(); recount(); highlight(t, j);
+    // Added skills sit at the end of the sliding list; bring the new one, and its ×, into view.
+    const chip = [...needsEl.querySelectorAll('[data-skill]')].find(b => b.dataset.skill === SECTORS[t][1][j]);
+    if (chip) chip.scrollIntoView({ inline: 'end', block: 'nearest', behavior: 'smooth' });
   }
   document.getElementById('addSkill').addEventListener('click', () => addSkill(Number(sectorSel.value), Number(titleSel.value)));
   // The globe calls this when a hexagon is tapped.
