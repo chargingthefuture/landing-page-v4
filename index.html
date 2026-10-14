@@ -230,7 +230,7 @@ body.has-invite .wrap { padding-bottom: 260px; }
 
   <section class="proof" aria-labelledby="prooftitle">
     <h2 id="prooftitle">Why people are here</h2>
-    <p class="potential">311 people already cover 36% of the skills a small country like Finland, Estonia or Singapore runs on. That's a projection, not a count. If we trade with each other instead of with the people targeting us, we have most of what we need between us.</p>
+    <p class="potential"><span id="pCount">311</span> people already cover 36% of the skills a small country like Finland, Estonia or Singapore runs on. That's a projection, not a count. If we trade with each other instead of with the people targeting us, we have most of what we need between us.</p>
     <ul class="facts">
       <li><b id="fTotal">311</b><span>people in the directory</span></li>
     </ul>
@@ -394,7 +394,7 @@ function boot(DATA, live) {
   const needTitles = (key) => (NEEDS.find(n => n[0] === key)?.[2] || []).map(name => byName.get(name)).filter(Boolean);
 
   if (live) {
-    for (const id of ['heroCount', 'fTotal']) document.getElementById(id).textContent = fmt(live.total);
+    for (const id of ['heroCount', 'fTotal', 'pCount']) document.getElementById(id).textContent = fmt(live.total);
     document.getElementById('asof').textContent = 'Counts come live from the Skills Economy directory, which Farah adds to most days.';
     document.getElementById('back').hidden = false;
   }
