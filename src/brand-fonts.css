@@ -1,0 +1,7 @@
+/* The landing page's type, self-hosted. Loading it from Google Fonts handed every visitor's IP
+   address to Google on every visit, on a page whose promise is "no account, no name". Vite bundles
+   these into this site's own files instead; the blog does the same. */
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/dm-sans/opsz.css";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
