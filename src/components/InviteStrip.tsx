@@ -1,22 +1,45 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// A row of the blog's published invite posts, one card each, newest first. It reads the blog's
-// own build output, invites.json, served by GitHub Pages with an open CORS header. Nothing here
-// decides what an invite is; the blog does. Renders nothing when the file cannot be read.
+// A row of the newest ten invitations, one card each, newest first, then a card that leads to the
+// Directory. It reads the app's public invite feed. Nothing here decides what an invite is; the app
+// does. Until the feed answers there is no row; if it fails, the row is the Directory card alone.
 //
 // Nothing moves on its own. The row scrolls by touch, by the two buttons, or by keyboard, and
 // every card is in the page for a screen reader. Owner decision, 2026-09-19.
 
-const INVITES_URL = "https://chargingthefuture.github.io/chargingthefuture/invites.json";
+const APP_URL = "https://app.chargingthefuture.com";
+const INVITES_URL = `${APP_URL}/api/directory/invites/public`;
+const DIRECTORY_URL = `${APP_URL}/apps/directory`;
+const MAX_CARDS = 10;
 
 type InviteCard = {
   name: string;
-  title: string;
   url: string;
   date: string;
   opening: string;
 };
+
+type FeedState = { status: "loading" } | { status: "ready"; invites: InviteCard[]; listed: number | null };
+
+/** Keeps only well-formed cards whose link goes into the app, so a bad row cannot become a bad link. */
+function readInvites(value: unknown): InviteCard[] {
+  if (!Array.isArray(value)) return [];
+  const cards: InviteCard[] = [];
+  for (const row of value) {
+    if (!row || typeof row !== "object") continue;
+    const { name, opening, date, url } = row as Record<string, unknown>;
+    if (typeof name !== "string" || !name.trim()) continue;
+    if (typeof url !== "string" || !url.startsWith(`${APP_URL}/`)) continue;
+    cards.push({
+      name: name.trim(),
+      opening: typeof opening === "string" ? opening.trim() : "",
+      date: typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "",
+      url,
+    });
+  }
+  return cards.slice(0, MAX_CARDS);
+}
 
 function formatDate(iso: string): string {
   const at = new Date(`${iso}T12:00:00Z`);
@@ -25,26 +48,32 @@ function formatDate(iso: string): string {
 }
 
 export function InviteStrip() {
-  const [invites, setInvites] = useState<InviteCard[]>([]);
+  const [feed, setFeed] = useState<FeedState>({ status: "loading" });
   const rowRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     let canceled = false;
     fetch(INVITES_URL, { headers: { accept: "application/json" } })
-      .then((res) => (res.ok ? res.json() : { invites: [] }))
-      .then((data: { invites?: InviteCard[] }) => {
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data: { invites?: unknown; listed?: unknown }) => {
         if (canceled) return;
-        setInvites(Array.isArray(data.invites) ? data.invites : []);
+        const listed =
+          typeof data.listed === "number" && Number.isFinite(data.listed) && data.listed > 0
+            ? Math.floor(data.listed)
+            : null;
+        setFeed({ status: "ready", invites: readInvites(data.invites), listed });
       })
       .catch(() => {
-        /* additive: no file, no row */
+        if (!canceled) setFeed({ status: "ready", invites: [], listed: null });
       });
     return () => {
       canceled = true;
     };
   }, []);
 
-  if (invites.length === 0) return null;
+  if (feed.status === "loading") return null;
+  const { invites, listed } = feed;
+  const listedText = listed ? listed.toLocaleString("en-US") : "300+";
 
   function scrollByCard(direction: -1 | 1) {
     const row = rowRef.current;
@@ -66,10 +95,10 @@ export function InviteStrip() {
             People already <span className="text-primary">on the list</span>
           </h2>
           <p className="text-muted-foreground mt-2">
-            Each card is an open invitation to somebody listed in the Directory, written in public so they can decide in their own time.
+            Each card is an invitation to somebody listed in the Directory, so they can decide in their own time. The newest are here, and every one is in the app.
           </p>
         </div>
-        {invites.length > 1 ? (
+        {invites.length > 0 ? (
           <div className="hidden sm:flex gap-2 shrink-0">
             <button
               type="button"
@@ -94,7 +123,11 @@ export function InviteStrip() {
       <ul
         ref={rowRef}
         className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth motion-reduce:scroll-auto"
-        aria-label={`${invites.length} invitations, newest first`}
+        aria-label={
+          invites.length > 0
+            ? `${invites.length} newest invitations, newest first, then a link to every invitation`
+            : "A link to every invitation"
+        }
       >
         {invites.map((invite) => (
           <li key={invite.url} className="snap-start shrink-0 w-[85vw] max-w-xs sm:w-80">
@@ -102,8 +135,10 @@ export function InviteStrip() {
               className="h-full flex flex-col p-5 border-4 border-foreground bg-card"
               style={{ boxShadow: "4px 4px 0px 0px hsl(var(--primary))" }}
             >
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{formatDate(invite.date)}</span>
-              <h3 className="font-display text-2xl uppercase leading-tight mb-3">{invite.title}</h3>
+              {invite.date ? (
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{formatDate(invite.date)}</span>
+              ) : null}
+              <h3 className="font-display text-2xl uppercase leading-tight mb-3">An invitation to {invite.name}</h3>
               <p className="text-muted-foreground leading-relaxed flex-grow">{invite.opening}</p>
               <a
                 href={invite.url}
@@ -115,6 +150,24 @@ export function InviteStrip() {
             </article>
           </li>
         ))}
+        <li className="snap-start shrink-0 w-[85vw] max-w-xs sm:w-80">
+          <article
+            className="h-full flex flex-col p-5 border-4 border-foreground bg-card"
+            style={{ boxShadow: "4px 4px 0px 0px hsl(var(--primary))" }}
+          >
+            <h3 className="font-display text-2xl uppercase leading-tight mb-3">Sign in to see every invitation</h3>
+            <p className="text-muted-foreground leading-relaxed flex-grow">
+              The free directory of {listedText} self-identified Targeted Individuals.
+            </p>
+            <a
+              href={DIRECTORY_URL}
+              rel="noopener noreferrer"
+              className="mt-4 font-bold uppercase tracking-widest text-primary hover:underline underline-offset-4"
+            >
+              Open the Directory →
+            </a>
+          </article>
+        </li>
       </ul>
     </section>
   );
