@@ -477,7 +477,7 @@ function LandingPage() {
 
       <StatMarquee />
 
-      {/* The blog's invite cards: who is already listed, written up one at a time. */}
+      {/* The newest invitations from the app's feed, then a card that leads to the Directory. */}
       <InviteStrip />
 
       {/* Apps teaser */}

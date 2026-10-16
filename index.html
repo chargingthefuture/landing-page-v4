@@ -718,21 +718,26 @@ function boot(DATA, live) {
 })();
 </script>
 <script>
-// People already on the list: the blog's published invitations, newest first, one at a time. It reads
-// the blog's own invites.json, as the earlier landing page did. Nothing moves on its own; closing it
-// keeps it closed for the rest of the visit. No file, no card.
+// People already on the list: the newest ten invitations, one at a time, then a card that leads to
+// the Directory. It reads the app's public invite feed. Nothing moves on its own; closing it keeps it
+// closed for the rest of the visit. If the feed does not answer, there is no card.
 (() => {
-  const URL_ = 'https://chargingthefuture.github.io/chargingthefuture/invites.json', KEY = 'ctf-invite-closed';
+  const APP = 'https://app.chargingthefuture.com', KEY = 'ctf-invite-closed';
+  const URL_ = `${APP}/api/directory/invites/public`, DIRECTORY = `${APP}/apps/directory`;
   try { if (sessionStorage.getItem(KEY)) return; } catch {}
   const box = document.getElementById('invite');
   const day = (iso) => { const d = new Date(`${iso}T12:00:00Z`); return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }); };
   let list = [], at = 0;
   function show() {
     const x = list[at];
-    document.getElementById('inviteDate').textContent = day(x.date);
+    const date = document.getElementById('inviteDate');
+    date.textContent = x.date ? day(x.date) : '';
+    date.hidden = !x.date;
     document.getElementById('inviteTitle').textContent = x.title;
     document.getElementById('inviteOpen').textContent = x.opening;
-    document.getElementById('inviteRead').href = x.url;
+    const read = document.getElementById('inviteRead');
+    read.href = x.url;
+    read.textContent = x.read;
     document.getElementById('invitePos').textContent = `${at + 1}/${list.length}`;
     document.getElementById('invitePrev').disabled = at === 0;
     document.getElementById('inviteNext').disabled = at === list.length - 1;
@@ -745,10 +750,27 @@ function boot(DATA, live) {
     try { sessionStorage.setItem(KEY, '1'); } catch {}
   });
   fetch(URL_, { headers: { accept: 'application/json' } })
-    .then(res => res.ok ? res.json() : { invites: [] })
+    .then(res => { if (!res.ok) throw new Error(`invite feed answered ${res.status}`); return res.json(); })
     .then(data => {
-      list = (Array.isArray(data.invites) ? data.invites : []).filter(x => x && x.url && x.title);
-      if (!list.length) return;
+      const invites = (Array.isArray(data.invites) ? data.invites : [])
+        .filter(x => x && typeof x.name === 'string' && x.name.trim() && typeof x.url === 'string' && x.url.startsWith(`${APP}/`))
+        .slice(0, 10)
+        .map(x => ({
+          date: typeof x.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.date) ? x.date : '',
+          title: `An invitation to ${x.name.trim()}`,
+          opening: typeof x.opening === 'string' ? x.opening : '',
+          url: x.url,
+          read: 'Read the invitation →',
+        }));
+      const listed = typeof data.listed === 'number' && Number.isFinite(data.listed) && data.listed > 0
+        ? Math.floor(data.listed).toLocaleString('en-US') : '300+';
+      list = [...invites, {
+        date: '',
+        title: 'Sign in to see every invitation',
+        opening: `The free directory of ${listed} self-identified Targeted Individuals.`,
+        url: DIRECTORY,
+        read: 'Open the Directory →',
+      }];
       show();
       box.hidden = false;
       document.body.classList.add('has-invite');
