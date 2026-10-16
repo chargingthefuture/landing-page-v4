@@ -98,8 +98,8 @@ select, input[type="text"] { width: 100%; font: 400 1rem var(--sans); color: var
 .night h2 { color: var(--night-ink); }
 .night p { margin: 0; color: var(--night-soft); font-size: .85rem; }
 svg.map { width: 100%; height: auto; display: block; touch-action: manipulation; }
-svg.map .hex { cursor: pointer; }
-svg.map .hex:focus-visible { outline: none; stroke: var(--night-ink); stroke-width: 2; }
+svg.map .node { cursor: pointer; }
+svg.map .node:focus-visible { outline: none; stroke: var(--night-ink); stroke-width: 2; }
 
 footer { font-size: .8rem; color: var(--soft); display: grid; gap: 14px; border-top: 1px solid var(--hair); padding-top: 16px; }
 footer p { margin: 0; }
@@ -245,9 +245,9 @@ body.has-invite .wrap { padding-bottom: 260px; }
   </section>
 
   <section class="night" aria-labelledby="maptitle">
-    <h2 id="maptitle">Every skill, one hexagon each</h2>
+    <h2 id="maptitle">Every skill, one node each</h2>
     <p>Brighter means more people can help. Tap one to check it. The globe has no countries on it, because nobody here is pinned to a place.</p>
-    <svg class="map" id="map" viewBox="-282 -282 564 564" role="group" aria-label="A globe of skills. Each hexagon is one skill, brighter where more people can help."></svg>
+    <svg class="map" id="map" viewBox="-282 -282 564 564" role="group" aria-label="A globe of skills. Each node is one skill, brighter where more people can help."></svg>
   </section>
 
   <footer>
@@ -434,7 +434,7 @@ function boot(DATA, live) {
     if (chip) chip.scrollIntoView({ inline: 'end', block: 'nearest', behavior: 'smooth' });
   }
   document.getElementById('addSkill').addEventListener('click', () => addSkill(Number(sectorSel.value), Number(titleSel.value)));
-  // The globe calls this when a hexagon is tapped.
+  // The globe calls this when a node is tapped.
   function pick(t, j) { sectorSel.value = String(t); fillTitles(j); addSkill(t, j); }
 
   // The groups to count: one per picked need, one per added skill.
@@ -522,49 +522,31 @@ function boot(DATA, live) {
     fetch('/api/unmet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ needs }) }).catch(() => {});
   }
 
-  // Globe of skills.
+  // Globe of skills: one node per skill. Sectors are shuffled across the sphere and links cross them, so no group holds a region.
   const svg = document.getElementById('map');
   const NS = 'http://www.w3.org/2000/svg';
   const el = (name, attrs, parent) => { const n = document.createElementNS(NS, name); for (const k in attrs) n.setAttribute(k, attrs[k]); (parent || svg).appendChild(n); return n; };
-  const S = 15.5, R3 = Math.sqrt(3), GLOBE = 262;
-  const DIRS = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]];
-  const key = (q, r) => q + ',' + r;
-  const hexes = new Map();
-  for (let q = -12; q <= 12; q++) for (let r = -12; r <= 12; r++) {
-    const x = S * R3 * (q + r / 2), y = S * 1.5 * r, rr = Math.hypot(x, y);
-    if (rr < 196 || (rr < 222 && rnd() < .5)) hexes.set(key(q, r), { q, r, x, y, t: -1 });
-  }
-  const list = [...hexes.values()];
-  const seeds = [list[Math.floor(rnd() * list.length)]];
-  while (seeds.length < SECTORS.length) {
-    let best = null, bestD = -1;
-    for (const h of list) { const dd = Math.min(...seeds.map(s => (s.x - h.x) ** 2 + (s.y - h.y) ** 2)); if (dd > bestD) { bestD = dd; best = h; } }
-    seeds.push(best);
-  }
-  seeds.sort((a, b) => (a.x ** 2 + a.y ** 2) - (b.x ** 2 + b.y ** 2));
-  const order = SECTORS.map((s, i) => i).sort((a, b) => SECTORS[b][1].length - SECTORS[a][1].length);
-  const front = [];
-  seeds.forEach((h, i) => { h.t = order[i]; front.push(h); });
-  while (front.length) {
-    const i = Math.floor(rnd() * front.length), h = front[i];
-    const open = DIRS.map(([dq, dr]) => hexes.get(key(h.q + dq, h.r + dr))).filter(n => n && n.t < 0);
-    if (!open.length) { front.splice(i, 1); continue; }
-    const n = open[Math.floor(rnd() * open.length)]; n.t = h.t; front.push(n);
-  }
-  const terr = SECTORS.map(() => []);
-  for (const h of list) terr[h.t].push(h);
-  terr.forEach((hs, t) => {
-    const s = seeds[order.indexOf(t)];
-    hs.sort((a, b) => ((a.x - s.x) ** 2 + (a.y - s.y) ** 2) - ((b.x - s.x) ** 2 + (b.y - s.y) ** 2));
-    hs.forEach((h, i) => { h.j = i % SECTORS[t][1].length; });
+  const GLOBE = 262, BALL = GLOBE * .93;
+  const nodes = [];
+  SECTORS.forEach(([, titles], t) => titles.forEach((_, j) => nodes.push({ t, j, n: people[t][j] })));
+  for (let i = nodes.length - 1; i > 0; i--) { const k = Math.floor(rnd() * (i + 1)); [nodes[i], nodes[k]] = [nodes[k], nodes[i]]; }
+  const GOLD = Math.PI * (3 - Math.sqrt(5));
+  nodes.forEach((p, i) => {
+    const y = 1 - 2 * (i + .5) / nodes.length, r = Math.sqrt(1 - y * y);
+    p.v = [r * Math.cos(GOLD * i), y, r * Math.sin(GOLD * i)];
+  });
+  // Each node links to its three nearest neighbours, whatever their sector.
+  const pairs = new Map();
+  nodes.forEach((p, i) => {
+    nodes.map((q, k) => [k, (p.v[0] - q.v[0]) ** 2 + (p.v[1] - q.v[1]) ** 2 + (p.v[2] - q.v[2]) ** 2])
+      .filter(([k]) => k !== i).sort((a, b) => a[1] - b[1]).slice(0, 3)
+      .forEach(([k]) => pairs.set(Math.min(i, k) + ',' + Math.max(i, k), [p, nodes[k]]));
   });
 
-  const corner = (h, i) => { const a = Math.PI / 180 * (60 * i - 30); return [h.x + (S - .6) * Math.cos(a), h.y + (S - .6) * Math.sin(a)]; };
-  const pts = (h) => [0,1,2,3,4,5].map(i => corner(h, i).map(v => v.toFixed(1)).join(',')).join(' ');
   const defs = el('defs', {});
-  defs.innerHTML = '<filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5"/></filter>'
-    + '<filter id="rim" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>'
+  defs.innerHTML = '<filter id="rim" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>'
     + '<radialGradient id="sea" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="var(--night-sea-hi)"/><stop offset="1" stop-color="var(--night-sea-lo)"/></radialGradient>'
+    + '<radialGradient id="halo"><stop offset="0" stop-color="var(--glow)" stop-opacity=".55"/><stop offset="1" stop-color="var(--glow)" stop-opacity="0"/></radialGradient>'
     + `<clipPath id="ball"><circle r="${GLOBE}"/></clipPath>`;
   el('circle', { r: GLOBE + 4, fill: 'none', stroke: 'var(--glow)', 'stroke-width': 6, opacity: .2, filter: 'url(#rim)' });
   el('circle', { r: GLOBE, fill: 'url(#sea)' });
@@ -575,39 +557,81 @@ function boot(DATA, live) {
     el('ellipse', { cx: 0, cy: (GLOBE * Math.sin(a)).toFixed(1), rx: (GLOBE * Math.cos(a)).toFixed(1), ry: (GLOBE * Math.cos(a) * .12).toFixed(1) }, inner);
   }
   const meridians = [0, 30, 60, 90, 120, 150].map(() => el('ellipse', { cx: 0, cy: 0, rx: 1, ry: GLOBE }, inner));
-  let spin = 0;
-  const turn = () => meridians.forEach((m, i) => m.setAttribute('rx', Math.abs(GLOBE * Math.sin((i * 30 + spin) * Math.PI / 180)).toFixed(1)));
-  turn();
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const tick = () => { spin = (spin + .06) % 180; turn(); requestAnimationFrame(tick); };
-    requestAnimationFrame(tick);
-  }
 
-  // Brightness uses a log scale so one very large skill does not wash out the rest.
-  const land = el('g', {}), glowL = el('g', { filter: 'url(#glow)' }), faces = el('g', {}), over = el('g', {});
-  const maxLog = Math.log(1 + Math.max(...people.flat()));
-  for (const h of list) {
-    const n = people[h.t][h.j];
-    const b = n ? Math.max(.3, Math.log(1 + n) / maxLog) : .07;
-    const v = 22 + (h.t * 7) % 12;
-    el('polygon', { points: pts(h), fill: `rgb(${v + 7},${v - 3},${v - 1})` }, land);
-    el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (n ? b * .7 : 0).toFixed(2) }, glowL);
-    const face = el('polygon', { points: pts(h), fill: 'var(--glow)', opacity: (b * .9).toFixed(2), class: 'hex', tabindex: 0, role: 'button',
-      'aria-label': `${SECTORS[h.t][1][h.j]}: ${live || n ? `${fmt(n)} people` : 'no count yet'}` }, faces);
-    const go = () => { pick(h.t, h.j); document.querySelector('.tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-    face.addEventListener('click', go);
-    face.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
+  // Brightness and size use a log scale so one very large skill does not wash out the rest. Hue shifts a little by sector.
+  const linkG = el('g', { stroke: 'var(--glow)', 'stroke-width': 1, 'pointer-events': 'none' });
+  const starG = el('g', { stroke: 'var(--pick)', 'stroke-width': 1.2, 'stroke-dasharray': '2 4', 'pointer-events': 'none' });
+  const nodeG = el('g', {}), over = el('g', { 'pointer-events': 'none' });
+  const links = [...pairs.values()].map(([a, b]) => ({ a, b, line: el('line', {}, linkG) }));
+  const maxLog = Math.log(1 + Math.max(1, ...people.flat()));
+  let sel = null, stars = [];
+  for (const p of nodes) {
+    const b = p.n ? Math.max(.3, Math.log(1 + p.n) / maxLog) : 0, r = 3 + b * 5;
+    const hue = (6 + (p.t * 11) % 44 - 22 + 360) % 360;
+    p.g = el('g', {}, nodeG);
+    if (p.n) el('circle', { r: (r * 2.8).toFixed(1), fill: 'url(#halo)', opacity: b.toFixed(2) }, p.g);
+    el('circle', { r: r.toFixed(1), fill: `hsl(${hue} 76% 77%)`, opacity: p.n ? (.6 + b * .4).toFixed(2) : .55 }, p.g);
+    const hit = el('circle', { r: 13, fill: 'transparent', class: 'node', tabindex: 0, role: 'button',
+      'aria-label': `${SECTORS[p.t][1][p.j]}: ${live || p.n ? `${fmt(p.n)} people` : 'no count yet'}` }, p.g);
+    const go = () => { pick(p.t, p.j); document.querySelector('.tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    hit.addEventListener('click', go);
+    hit.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
+    hit.addEventListener('focus', () => face(p));
   }
-  const outlineP = el('path', { d: '', stroke: 'var(--night-ink)', 'stroke-width': 1.2, opacity: .35, fill: 'none', 'stroke-dasharray': '3 4' }, over);
-  const ring = el('circle', { r: 8, cx: -999, cy: -999, fill: 'none', stroke: 'var(--pick)', 'stroke-width': 2, class: 'pulse', 'pointer-events': 'none' }, over);
-  const selHex = el('polygon', { points: '', stroke: 'var(--pick)', 'stroke-width': 3, fill: 'none', 'stroke-linejoin': 'round', 'pointer-events': 'none' }, over);
+  const ring = el('circle', { r: 8, cx: -999, cy: -999, fill: 'none', stroke: 'var(--pick)', 'stroke-width': 2, class: 'pulse' }, over);
+  const dot = el('circle', { r: 10, cx: -999, cy: -999, fill: 'none', stroke: 'var(--pick)', 'stroke-width': 2.5 }, over);
+
+  // Orthographic view: spin about the axis, look down a little (matching the parallels), then the same -12° tilt as the grid.
+  const T = -12 * Math.PI / 180, CT = Math.cos(T), ST = Math.sin(T), P = .12, CP = Math.cos(P), SP = Math.sin(P);
+  let spin = 0, goal = null, hold = false, seen = true, raf = 0;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function place() {
+    meridians.forEach((m, i) => m.setAttribute('rx', Math.abs(GLOBE * Math.sin((i * 30 + spin) * Math.PI / 180)).toFixed(1)));
+    const s = spin * Math.PI / 180, cs = Math.cos(s), ss = Math.sin(s);
+    for (const p of nodes) {
+      const [x, y, z] = p.v, x1 = x * cs + z * ss, z1 = z * cs - x * ss, y2 = y * CP - z1 * SP;
+      p.z = y * SP + z1 * CP;
+      p.X = BALL * (x1 * CT - y2 * ST); p.Y = BALL * (x1 * ST + y2 * CT);
+      const k = (p.z + 1) / 2;
+      p.g.setAttribute('transform', `translate(${p.X.toFixed(1)},${p.Y.toFixed(1)}) scale(${(.6 + .4 * k).toFixed(2)})`);
+      p.g.setAttribute('opacity', (.15 + .85 * k * k).toFixed(2));
+      const front = p.z > -.05;
+      if (front !== p.front) { p.front = front; p.g.style.pointerEvents = front ? '' : 'none'; }
+    }
+    const line = (l, a, b, o) => { l.setAttribute('x1', a.X.toFixed(1)); l.setAttribute('y1', a.Y.toFixed(1)); l.setAttribute('x2', b.X.toFixed(1)); l.setAttribute('y2', b.Y.toFixed(1)); l.setAttribute('opacity', o); };
+    for (const l of links) line(l.line, l.a, l.b, (.03 + .22 * ((l.a.z + l.b.z) / 2 + 1) / 2).toFixed(2));
+    if (sel) {
+      stars.forEach(([l, q]) => line(l, sel, q, (.1 + .6 * Math.max(0, (sel.z + q.z) / 2 + .3)).toFixed(2)));
+      for (const c of [ring, dot]) { c.setAttribute('cx', sel.X.toFixed(1)); c.setAttribute('cy', sel.Y.toFixed(1)); }
+    }
+  }
+  function frame() {
+    if (goal !== null) {
+      const d = ((goal - spin) % 360 + 540) % 360 - 180;
+      if (still || Math.abs(d) < .3) { spin = goal; goal = null; } else spin += d * .08;
+    } else if (!hold && !still) spin += .06;
+    spin = (spin % 360 + 360) % 360;
+    place();
+  }
+  const loop = () => { frame(); raf = seen && (!still || goal !== null) ? requestAnimationFrame(loop) : 0; };
+  const wake = () => { if (!raf) raf = requestAnimationFrame(loop); };
+  // Turn a node to face the viewer: the spin where it sits on the near side of the axis.
+  function face(p) { goal = (Math.atan2(-p.v[0], p.v[2]) * 180 / Math.PI + 360) % 360; wake(); }
+  svg.addEventListener('pointerenter', () => { hold = true; });
+  svg.addEventListener('pointerleave', () => { hold = false; });
+  svg.addEventListener('focusin', () => { hold = true; });
+  svg.addEventListener('focusout', () => { hold = false; });
+  if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { seen = e.isIntersecting; if (seen) wake(); }).observe(svg);
+  place();
+  wake();
+
+  // A picked skill: pulse on its node, and dashed lines out to the rest of its sector wherever they sit.
   function highlight(t, j) {
-    let d = '';
-    for (const h of terr[t]) DIRS.forEach(([dq, dr], i) => { const n = hexes.get(key(h.q + dq, h.r + dr)); if (!n || n.t !== h.t) { const a = corner(h, i), b = corner(h, (i + 1) % 6); d += `M${a[0].toFixed(1)},${a[1].toFixed(1)}L${b[0].toFixed(1)},${b[1].toFixed(1)}`; } });
-    outlineP.setAttribute('d', d);
-    const h = terr[t].find(x => x.j === j) || terr[t][0];
-    selHex.setAttribute('points', pts(h));
-    ring.setAttribute('cx', h.x); ring.setAttribute('cy', h.y);
+    sel = nodes.find(p => p.t === t && p.j === j) || nodes.find(p => p.t === t);
+    starG.textContent = '';
+    stars = nodes.filter(q => q.t === t && q !== sel).map(q => [el('line', {}, starG), q]);
+    face(sel);
+    place();
   }
 
   // Saving a match and coming back to it. The code is the only way back: the page never asks who you are.
