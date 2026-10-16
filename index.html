@@ -97,8 +97,9 @@ select, input[type="text"] { width: 100%; font: 400 1rem var(--sans); color: var
 .night { background: var(--night); color: var(--night-ink); border-radius: 18px; padding: 14px; display: grid; gap: 10px; }
 .night h2 { color: var(--night-ink); }
 .night p { margin: 0; color: var(--night-soft); font-size: .85rem; }
-svg.map { width: 100%; height: auto; display: block; touch-action: manipulation; }
-svg.map .node { cursor: pointer; }
+svg.map { width: 100%; height: auto; display: block; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+svg.map.near { cursor: pointer; }
+svg.map.drag { cursor: grabbing; }
 svg.map .node:focus-visible { outline: none; stroke: var(--night-ink); stroke-width: 2; }
 
 footer { font-size: .8rem; color: var(--soft); display: grid; gap: 14px; border-top: 1px solid var(--hair); padding-top: 16px; }
@@ -566,24 +567,23 @@ function boot(DATA, live) {
   const maxLog = Math.log(1 + Math.max(1, ...people.flat()));
   let sel = null, stars = [];
   for (const p of nodes) {
-    const b = p.n ? Math.max(.3, Math.log(1 + p.n) / maxLog) : 0, r = 3 + b * 5;
+    const b = p.n ? Math.max(.3, Math.log(1 + p.n) / maxLog) : 0, r = 4.5 + b * 6;
     const hue = (6 + (p.t * 11) % 44 - 22 + 360) % 360;
     p.g = el('g', {}, nodeG);
     if (p.n) el('circle', { r: (r * 2.8).toFixed(1), fill: 'url(#halo)', opacity: b.toFixed(2) }, p.g);
     el('circle', { r: r.toFixed(1), fill: `hsl(${hue} 76% 77%)`, opacity: p.n ? (.6 + b * .4).toFixed(2) : .55 }, p.g);
-    const hit = el('circle', { r: 13, fill: 'transparent', class: 'node', tabindex: 0, role: 'button',
+    const hit = el('circle', { r: 13, fill: 'transparent', 'pointer-events': 'none', class: 'node', tabindex: 0, role: 'button',
       'aria-label': `${SECTORS[p.t][1][p.j]}: ${live || p.n ? `${fmt(p.n)} people` : 'no count yet'}` }, p.g);
-    const go = () => { pick(p.t, p.j); document.querySelector('.tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-    hit.addEventListener('click', go);
-    hit.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
+    hit.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(p); } });
     hit.addEventListener('focus', () => face(p));
   }
+  const go = (p) => { pick(p.t, p.j); document.querySelector('.tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   const ring = el('circle', { r: 8, cx: -999, cy: -999, fill: 'none', stroke: 'var(--pick)', 'stroke-width': 2, class: 'pulse' }, over);
   const dot = el('circle', { r: 10, cx: -999, cy: -999, fill: 'none', stroke: 'var(--pick)', 'stroke-width': 2.5 }, over);
 
   // Orthographic view: spin about the axis, look down a little (matching the parallels), then the same -12° tilt as the grid.
   const T = -12 * Math.PI / 180, CT = Math.cos(T), ST = Math.sin(T), P = .12, CP = Math.cos(P), SP = Math.sin(P);
-  let spin = 0, goal = null, hold = false, seen = true, raf = 0;
+  let spin = 0, vel = 0, goal = null, hold = false, seen = true, raf = 0;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function place() {
     meridians.forEach((m, i) => m.setAttribute('rx', Math.abs(GLOBE * Math.sin((i * 30 + spin) * Math.PI / 180)).toFixed(1)));
@@ -609,16 +609,45 @@ function boot(DATA, live) {
     if (goal !== null) {
       const d = ((goal - spin) % 360 + 540) % 360 - 180;
       if (still || Math.abs(d) < .3) { spin = goal; goal = null; } else spin += d * .08;
-    } else if (!hold && !still) spin += .06;
+    } else if (Math.abs(vel) > .01) { spin += vel; vel *= .94; }
+    else if (!hold && !still) spin += .06;
     spin = (spin % 360 + 360) % 360;
     place();
   }
-  const loop = () => { frame(); raf = seen && (!still || goal !== null) ? requestAnimationFrame(loop) : 0; };
+  const loop = () => { frame(); raf = seen && (!still || goal !== null || Math.abs(vel) > .01) ? requestAnimationFrame(loop) : 0; };
   const wake = () => { if (!raf) raf = requestAnimationFrame(loop); };
   // Turn a node to face the viewer: the spin where it sits on the near side of the axis.
   function face(p) { goal = (Math.atan2(-p.v[0], p.v[2]) * 180 / Math.PI + 360) % 360; wake(); }
+  // The whole globe is the touch area: a tap takes the nearest node on the near side, a sideways drag turns the globe.
+  const toMap = (ev) => { const m = svg.getScreenCTM().inverse(); return [ev.clientX * m.a + ev.clientY * m.c + m.e, ev.clientX * m.b + ev.clientY * m.d + m.f]; };
+  const unit = () => svg.getBoundingClientRect().width / 564;
+  const nearest = (ev) => {
+    const [x, y] = toMap(ev), reach = Math.max(36, 30 / unit());
+    let best = null, bd = reach * reach;
+    for (const p of nodes) if (p.front) { const d = (p.X - x) ** 2 + (p.Y - y) ** 2; if (d < bd) { bd = d; best = p; } }
+    return best;
+  };
+  let press = null;
   svg.addEventListener('pointerenter', () => { hold = true; });
-  svg.addEventListener('pointerleave', () => { hold = false; });
+  svg.addEventListener('pointerleave', () => { hold = false; svg.classList.remove('near'); });
+  svg.addEventListener('pointerdown', (ev) => { if (ev.button) return; press = { x: ev.clientX, last: ev.clientX, t: ev.timeStamp, drag: false }; vel = 0; goal = null; });
+  svg.addEventListener('pointermove', (ev) => {
+    if (!press) { svg.classList.toggle('near', !!nearest(ev)); return; }
+    if (!press.drag && Math.abs(ev.clientX - press.x) > 6) { press.drag = true; svg.setPointerCapture(ev.pointerId); svg.classList.add('drag'); }
+    if (!press.drag) return;
+    const step = (ev.clientX - press.last) / unit() / BALL * 180 / Math.PI;
+    spin += step; vel = step * Math.min(1, 16 / Math.max(1, ev.timeStamp - press.t));
+    press.last = ev.clientX; press.t = ev.timeStamp;
+    if (still) place(); else wake();
+  });
+  const release = (ev) => {
+    if (!press) return;
+    const was = press; press = null; svg.classList.remove('drag');
+    if (was.drag) { if (still) vel = 0; else wake(); return; }
+    if (ev.type === 'pointerup') { const p = nearest(ev); if (p) go(p); }
+  };
+  svg.addEventListener('pointerup', release);
+  svg.addEventListener('pointercancel', release);
   svg.addEventListener('focusin', () => { hold = true; });
   svg.addEventListener('focusout', () => { hold = false; });
   if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { seen = e.isIntersecting; if (seen) wake(); }).observe(svg);
