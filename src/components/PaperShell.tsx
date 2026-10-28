@@ -74,8 +74,8 @@ export function PaperShell({ children }: { children: ReactNode }) {
             <a href="/look-ma">Look Ma, I Fixed It</a>
             <a href="/schemes">The Schemes</a>
             <a href="https://chargingthefuture.github.io/chargingthefuture/feed">People on the list</a>
-            <a href="https://app.chargingthefuture.com/guide">Guide</a>
-            <a href="https://app.chargingthefuture.com/terms">Terms</a>
+            <a href="https://app.lagatos.com/guide">Guide</a>
+            <a href="https://app.lagatos.com/terms">Terms</a>
             <a href="https://github.com/chargingthefuture/chargingthefuture/releases?q=mobile" target="_blank" rel="noopener noreferrer">Android APK</a>
             <a href="https://github.com/chargingthefuture/chargingthefuture/releases?q=wallpapers" target="_blank" rel="noopener noreferrer">Wallpapers</a>
           </nav>

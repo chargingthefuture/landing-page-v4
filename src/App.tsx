@@ -18,7 +18,7 @@ import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
 const BASE = import.meta.env.BASE_URL;
-const APP_URL = "https://app.chargingthefuture.com";
+const APP_URL = "https://app.lagatos.com";
 const GUIDE_URL = `${APP_URL}/guide`;
 const TERMS_URL = `${APP_URL}/terms`;
 const INVITES_URL = "https://chargingthefuture.github.io/chargingthefuture/feed";
