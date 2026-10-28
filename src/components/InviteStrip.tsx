@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 // Nothing moves on its own. The row scrolls by touch, by the two buttons, or by keyboard, and
 // every card is in the page for a screen reader. Owner decision, 2026-09-19.
 
-const APP_URL = "https://app.chargingthefuture.com";
+const APP_URL = "https://app.lagatos.com";
 const INVITES_URL = `${APP_URL}/api/directory/invites/public`;
 const DIRECTORY_URL = `${APP_URL}/apps/directory`;
 const MAX_CARDS = 10;

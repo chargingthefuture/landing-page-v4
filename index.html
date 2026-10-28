@@ -235,7 +235,7 @@ body.has-invite .wrap { padding-bottom: 260px; }
       <h3>Free · Skills Economy</h3>
       <p>Join and meet them yourself. Post what you need on the Goals board, where any member can pick up a small part of it.</p>
       <p class="fine">A person checks each new member before they can use the app.</p>
-      <a class="btn ghost" href="https://app.chargingthefuture.com/apps/peer-programming?tab=goals">Open the Goals board</a>
+      <a class="btn ghost" href="https://app.lagatos.com/apps/peer-programming?tab=goals">Open the Goals board</a>
     </div>
     <div class="door">
       <h3>Paid · One Percent</h3>
@@ -273,8 +273,8 @@ body.has-invite .wrap { padding-bottom: 260px; }
       <a href="/look-ma">Look Ma, I Fixed It</a>
       <a href="/schemes">The Schemes</a>
       <a href="https://chargingthefuture.github.io/chargingthefuture/feed">People on the list</a>
-      <a href="https://app.chargingthefuture.com/guide">Guide</a>
-      <a href="https://app.chargingthefuture.com/terms">Terms</a>
+      <a href="https://app.lagatos.com/guide">Guide</a>
+      <a href="https://app.lagatos.com/terms">Terms</a>
       <a href="https://github.com/chargingthefuture/chargingthefuture/releases?q=mobile" target="_blank" rel="noopener noreferrer">Android APK</a>
       <a href="https://github.com/chargingthefuture/chargingthefuture/releases?q=wallpapers" target="_blank" rel="noopener noreferrer">Wallpapers</a>
     </nav>
@@ -767,7 +767,7 @@ function boot(DATA, live) {
 // the Directory. It reads the app's public invite feed. Nothing moves on its own; closing it keeps it
 // closed for the rest of the visit. If the feed does not answer, there is no card.
 (() => {
-  const APP = 'https://app.chargingthefuture.com', KEY = 'ctf-invite-closed';
+  const APP = 'https://app.lagatos.com', KEY = 'ctf-invite-closed';
   const URL_ = `${APP}/api/directory/invites/public`, DIRECTORY = `${APP}/apps/directory`;
   try { if (sessionStorage.getItem(KEY)) return; } catch {}
   const box = document.getElementById('invite');
