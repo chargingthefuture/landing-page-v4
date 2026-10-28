@@ -161,6 +161,22 @@ footer .links a:hover, footer .links a:focus-visible { color: var(--ink); }
 .invite button:focus-visible, .invite a:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 body.has-invite .wrap { padding-bottom: 260px; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Desktop: the page fills the screen. Hero and the match tool sit side by side, then proof beside the globe. */
+@media (min-width: 960px) {
+  .wrap { max-width: none; padding-inline: clamp(32px, 5vw, 96px); padding-block: 24px 72px; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: "top top" "hero tool" "back tool" "doors doors" "proof night" "foot foot"; grid-template-rows: auto auto 1fr; column-gap: clamp(32px, 4vw, 80px); row-gap: 40px; align-items: start; }
+  .top { grid-area: top; }
+  .hero { grid-area: hero; padding-top: 24px; gap: 16px; }
+  .tool { grid-area: tool; padding: 24px; }
+  .back { grid-area: back; }
+  .doors { grid-area: doors; }
+  .proof { grid-area: proof; }
+  .night { grid-area: night; }
+  .wrap > footer { grid-area: foot; }
+  h1 { font-size: clamp(2.8rem, 4.4vw, 4.6rem); }
+  .lede { font-size: 1.2rem; }
+  .invite { left: auto; right: 24px; bottom: 24px; max-width: 420px; }
+  body.has-invite .wrap { padding-bottom: 72px; }
+}
 </style>
 </head>
 <body>
