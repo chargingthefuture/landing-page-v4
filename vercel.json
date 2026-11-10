@@ -4,6 +4,28 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/feed/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "chargingthefuture.com"
+        }
+      ],
+      "destination": "https://chargingthefuture.github.io/chargingthefuture/feed",
+      "permanent": false
+    },
+    {
+      "source": "/feed/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.chargingthefuture.com"
+        }
+      ],
+      "destination": "https://chargingthefuture.github.io/chargingthefuture/feed",
+      "permanent": false
+    },
+    {
       "source": "/feed",
       "destination": "https://chargingthefuture.github.io/chargingthefuture/feed",
       "permanent": false
