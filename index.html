@@ -75,8 +75,8 @@ select, input[type="text"] { width: 100%; font: 400 1rem var(--sans); color: var
 .big { margin: 0; font: 500 clamp(2.6rem, 12vw, 3.6rem)/1 var(--serif); color: var(--deep); font-variant-numeric: tabular-nums; }
 .big.few { font-size: clamp(1.6rem, 7vw, 2rem); }
 .say { margin: 0; font: 500 1.15rem/1.3 var(--serif); text-wrap: balance; }
-.also { margin: 0; color: var(--soft); font-size: .92rem; }
-.private { margin: 0; font-size: .85rem; color: var(--soft); display: flex; gap: 8px; align-items: baseline; }
+.also { margin: 0; color: var(--soft); font-size: 1rem; }
+.private { margin: 0; font-size: .95rem; color: var(--soft); display: flex; gap: 8px; align-items: baseline; }
 .private b { color: var(--ink); font-weight: 600; }
 
 .btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--deep); background: var(--deep); color: var(--on-deep); font: 600 .95rem var(--sans); border-radius: 12px; min-height: 46px; padding: 10px 16px; cursor: pointer; text-align: center; }
@@ -88,30 +88,30 @@ select, input[type="text"] { width: 100%; font: 400 1rem var(--sans); color: var
 .facts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
 .facts li { border-top: 2px solid var(--deep); padding-top: 8px; display: grid; gap: 4px; min-width: 0; }
 .facts b { font: 500 1.6rem/1 var(--serif); font-variant-numeric: tabular-nums; }
-.facts span { font-size: .8rem; color: var(--soft); line-height: 1.3; }
-.proof p { margin: 0; font-size: .95rem; }
+.facts span { font-size: .9rem; color: var(--soft); line-height: 1.3; }
+.proof p { margin: 0; font-size: 1rem; }
 .proof .potential { font: 500 1.1rem/1.4 var(--serif); color: var(--ink); }
 .facts.quora { grid-template-columns: repeat(4, minmax(0,1fr)); }
 .facts.quora b { font-size: 1.25rem; }
 
-/* Two doors */
-.doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-.door { background: var(--card); border: 1px solid var(--hair); border-radius: 16px; padding: 16px; display: grid; gap: 8px; align-content: start; }
-.door h3 { margin: 0; font: 600 .74rem var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--brass); }
-.door .price { margin: 0; font: 500 1.6rem/1 var(--serif); color: var(--deep); }
-.door p { margin: 0; font-size: .94rem; }
-.door .fine { color: var(--soft); font-size: .85rem; }
+/* One path in */
+.join { background: var(--card); border: 1px solid var(--hair); border-radius: 16px; padding: 16px; display: grid; gap: 10px; }
+.join p { margin: 0; }
+.join .fine { color: var(--soft); font-size: .95rem; }
+.how { margin: 4px 0 0; padding-left: 1.4em; display: grid; gap: 6px; font-size: 1rem; }
+.how b { font-weight: 600; }
+
 
 /* Night globe */
 .night { background: var(--night); color: var(--night-ink); border-radius: 18px; padding: 14px; display: grid; gap: 10px; }
 .night h2 { color: var(--night-ink); }
-.night p { margin: 0; color: var(--night-soft); font-size: .85rem; }
+.night p { margin: 0; color: var(--night-soft); font-size: .95rem; }
 svg.map { width: 100%; height: auto; display: block; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
 svg.map.near { cursor: pointer; }
 svg.map.drag { cursor: grabbing; }
 svg.map .node:focus-visible { outline: none; stroke: var(--night-ink); stroke-width: 2; }
 
-footer { font-size: .8rem; color: var(--soft); display: grid; gap: 14px; border-top: 1px solid var(--hair); padding-top: 16px; }
+footer { font-size: .9rem; color: var(--soft); display: grid; gap: 14px; border-top: 1px solid var(--hair); padding-top: 16px; }
 footer p { margin: 0; }
 footer .links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
 footer .links a { color: var(--soft); text-decoration: none; font: 600 .74rem var(--sans); letter-spacing: .08em; text-transform: uppercase; }
@@ -122,11 +122,10 @@ footer .links a:hover, footer .links a:focus-visible { color: var(--ink); }
 @media (max-width: 420px) { .facts b { font-size: 1.3rem; } }
 </style>
 <style>
-/* Two rows that scroll sideways, so the list never takes over the screen. */
-.chips { display: grid; gap: 6px; justify-content: start; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
-.crow { display: flex; gap: 6px; width: max-content; }
-.chips::-webkit-scrollbar { display: none; }
-.chip { border: 1px solid var(--hair); background: var(--paper); color: var(--ink); font: 500 .82rem var(--sans); border-radius: 999px; padding: 6px 11px; cursor: pointer; min-height: 34px; white-space: nowrap; }
+/* Chips wrap into rows. The first few show, and a "More needs" chip opens the rest, so the list never takes over the screen and nothing hides off the edge. */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--hair); background: var(--paper); color: var(--ink); font: 500 .95rem var(--sans); border-radius: 999px; padding: 8px 14px; cursor: pointer; min-height: 44px; }
+.chip.toggle { border-style: dashed; color: var(--deep); font-weight: 600; }
 .chip b { font: 500 .82rem var(--mono); color: var(--brass); margin-left: 4px; }
 .chip[aria-pressed="true"] { background: var(--deep); color: var(--on-deep); border-color: var(--deep); }
 .chip[aria-pressed="true"] b { color: var(--on-deep); }
@@ -143,7 +142,7 @@ footer .links a:hover, footer .links a:focus-visible { color: var(--ink); }
 .since { margin: 0; font: 500 1.15rem/1.35 var(--serif); }
 [hidden] { display: none !important; }
 .tool > h2 { margin: 0; }
-.tool > .fine { margin: -8px 0 0; }
+.tool > .fine { margin: -8px 0 0; font-size: .95rem; color: var(--soft); }
 .more { border: 1px solid var(--hair); border-radius: 12px; padding: 10px 12px; background: var(--paper); }
 .more summary { cursor: pointer; font: 600 .9rem var(--sans); color: var(--deep); }
 /* Safari ignores grid on <details>, so the spacing lives on a wrapper inside it. */
@@ -184,13 +183,18 @@ body.has-invite .wrap { padding-bottom: 260px; }
 
   <header class="hero">
     <p class="eyebrow"><svg viewBox="4 67.9 100 85" aria-hidden="true"><linearGradient id="semark" x1="11.51" x2="96.71" y1="110.4" y2="110.4" gradientUnits="userSpaceOnUse"><stop class="semark-a" offset="0"/><stop class="semark-b" offset="1"/></linearGradient><path fill="url(#semark)" d="m94 105.7h-26v-7.7h25.5c1.5-0.1 3.1-1.3 3.1-3.3v-11.7c0-1.5-1.2-2.9-2.8-2.9l-22.5-0.1c-1.7 0-3.3 1.4-3.3 3.1l0.1 9.7h-24.8c-1.6 0-3 1.3-3 2.9v12.9h-25.7c-1.6 0-3.1 1.3-3.1 2.9v8.1c0 1.4 1.2 2.7 2.6 2.7h79.9c1.5 0 2.8-1.3 2.9-2.7v-11.3c-0.2-1.3-1.4-2.6-2.9-2.6zm-0.2 21.2h-79.3c-1.4 0-2.9 1.2-2.9 2.8v8.3c0 1.4 1.2 3 2.8 3h79.6c1.6 0 2.8-1.3 2.8-2.8v-8c0-1.8-1.4-3.2-3-3.3z"/></svg>Skills Economy</p>
-    <h1>See who could help you. No account needed.</h1>
-    <p class="lede"><span id="heroCount">311</span> people are listed in the Skills Economy directory. Tap what you need and see how many could help.</p>
+    <h1>Find people with the skills you need.</h1>
+    <p class="lede">Skills Economy is a free network where survivors of trafficking and targeting trade skills and help each other rebuild. <span id="heroCount">311</span> people are listed in its directory.</p>
+    <ol class="how">
+      <li><b>Pick what you need.</b> The count of people who could help shows right away. No account, no name.</li>
+      <li><b>Save it, if you like.</b> A code brings you back to see who has been added since.</li>
+      <li><b>Meet them.</b> Sign up free and post what you need on Today, where members answer.</li>
+    </ol>
   </header>
 
   <section class="tool" aria-labelledby="tooltitle">
     <h2 id="tooltitle">What do you need?</h2>
-    <p class="fine">Tap all that apply, and tap again to remove one. Slide the list sideways to see more. You'll see how many people in the directory match you.</p>
+    <p class="fine">Tap all that apply, and tap again to remove one. The count below changes with each tap.</p>
     <div class="chips" id="needs" role="group" aria-label="What you need"></div>
     <details class="more" id="more">
       <summary>Something else? Add a skill</summary>
@@ -208,7 +212,7 @@ body.has-invite .wrap { padding-bottom: 260px; }
       <ul class="split" id="split"></ul>
       <p class="also" id="also"></p>
     </div>
-    <p class="private"><b>Private.</b> Nobody sees who you are, and you never see who they are, until somebody asks for an introduction.</p>
+    <p class="private"><b>Private.</b> Matching asks for no name, email or account and shows counts only. Names are seen only inside the app, by members a person has checked.</p>
     <button class="btn" type="button" id="save" hidden>Save this match</button>
     <div class="saved" id="saved" hidden></div>
   </section>
@@ -223,19 +227,11 @@ body.has-invite .wrap { padding-bottom: 260px; }
     <div id="backres" aria-live="polite"></div>
   </section>
 
-  <section class="doors" aria-label="Meet them">
-    <div class="door">
-      <h3>Free · Skills Economy</h3>
-      <p>Join and meet them yourself. Post what you need on the Goals board, where any member can pick up a small part of it.</p>
-      <p class="fine">A person checks each new member before they can use the app.</p>
-      <a class="btn ghost" href="https://app.lagatos.com/apps/peer-programming?tab=goals">Open the Goals board</a>
-    </div>
-    <div class="door">
-      <h3>Paid · One Percent</h3>
-      <p class="price">$7</p>
-      <p>Farah looks at your match and introduces you by name to the people who fit.</p>
-      <a class="btn" href="https://app.farahbrunache.com/buy" id="book">Book an introduction</a>
-    </div>
+  <section class="join" aria-labelledby="jointitle">
+    <h2 id="jointitle">Meet them on Today</h2>
+    <p>Today is where members post what they need and what they can offer, and answer each other. Post your need as an ask, broken into small parts somebody could do from a phone, and pick up a part of somebody else's when you have the time.</p>
+    <p class="fine">Reading Today needs no account. Signing up is free and you can post the same day. A person checks each new member before they can see the directory by name.</p>
+    <a class="btn" href="https://app.lagatos.com/today">Open Today</a>
   </section>
 
   <section class="proof" aria-labelledby="prooftitle">
@@ -244,7 +240,17 @@ body.has-invite .wrap { padding-bottom: 260px; }
     <ul class="facts">
       <li><b id="fTotal">311</b><span>people in the directory</span></li>
     </ul>
-    <p class="kicker">Farah's Quora posts, all time — prior to the ban</p>
+  </section>
+
+  <section class="night" aria-labelledby="maptitle">
+    <h2 id="maptitle">Every skill, one node each</h2>
+    <p>Brighter means more people can help. Tap one to check it. The globe has no countries on it, because nobody here is pinned to a place.</p>
+    <svg class="map" id="map" viewBox="-282 -282 564 564" role="group" aria-label="A globe of skills. Each node is one skill, brighter where more people can help."></svg>
+  </section>
+
+  <section class="proof history" aria-labelledby="histtitle">
+    <h2 id="histtitle">Where the directory came from</h2>
+    <p class="kicker">Farah's Quora posts, all time, before the accounts were removed</p>
     <ul class="facts quora">
       <li><b>86,037</b><span>views</span></li>
       <li><b>1,624</b><span>upvotes</span></li>
@@ -252,12 +258,6 @@ body.has-invite .wrap { padding-bottom: 260px; }
       <li><b>449</b><span>follows</span></li>
     </ul>
     <p>Those Quora answers brought people into Skills Economy until the accounts were removed. The people did not go away, so they are listed here now.</p>
-  </section>
-
-  <section class="night" aria-labelledby="maptitle">
-    <h2 id="maptitle">Every skill, one node each</h2>
-    <p>Brighter means more people can help. Tap one to check it. The globe has no countries on it, because nobody here is pinned to a place.</p>
-    <svg class="map" id="map" viewBox="-282 -282 564 564" role="group" aria-label="A globe of skills. Each node is one skill, brighter where more people can help."></svg>
   </section>
 
   <footer>
@@ -415,15 +415,22 @@ function boot(DATA, live) {
   // What the visitor has picked: needs by key, and any single skills they added, by title name.
   const picked = new Set(), extra = new Set();
   const needsEl = document.getElementById('needs');
+  const FIRST_NEEDS = 8;
+  let allNeeds = false;
   function drawChips() {
     const chips = NEEDS.map(([key, label]) => `<button type="button" class="chip" data-need="${key}" aria-pressed="${picked.has(key)}">${esc(label)}</button>`)
       .concat([...extra].map(name => `<button type="button" class="chip" data-skill="${esc(name)}" aria-pressed="true">${esc(name)} <span aria-hidden="true">×</span></button>`));
-    const rows = [[], []];
-    chips.forEach((c, i) => rows[i % 2].push(c));
-    needsEl.innerHTML = rows.map(r => `<div class="crow">${r.join('')}</div>`).join('');
+    // The first few needs show, plus any already picked; the rest open behind "More needs".
+    const shownChips = allNeeds ? chips : chips.filter((c, i) => i < FIRST_NEEDS || i >= NEEDS.length || picked.has(NEEDS[i][0]));
+    const hiddenCount = chips.length - shownChips.length;
+    const toggle = allNeeds
+      ? `<button type="button" class="chip toggle" data-toggle="1" aria-expanded="true">Fewer needs</button>`
+      : hiddenCount ? `<button type="button" class="chip toggle" data-toggle="1" aria-expanded="false">More needs (${hiddenCount})</button>` : '';
+    needsEl.innerHTML = shownChips.join('') + toggle;
   }
   needsEl.addEventListener('click', (ev) => {
     const b = ev.target.closest('.chip'); if (!b) return;
+    if (b.dataset.toggle) { allNeeds = !allNeeds; drawChips(); needsEl.querySelector('.toggle')?.focus(); return; }
     if (b.dataset.need) { picked.has(b.dataset.need) ? picked.delete(b.dataset.need) : picked.add(b.dataset.need); }
     else if (b.dataset.skill) extra.delete(b.dataset.skill);
     drawChips(); recount();
@@ -480,7 +487,7 @@ function boot(DATA, live) {
     document.getElementById('save').hidden = true;
     if (!g.length) {
       big.textContent = ''; split.innerHTML = '';
-      say.textContent = 'Tap what you need above.';
+      say.textContent = 'Pick a need above to see how many people could help.';
       also.textContent = '';
       return;
     }
@@ -515,10 +522,10 @@ function boot(DATA, live) {
       : !total ? ' This has been noted as an in-demand need, so Farah knows to look for somebody.'
       : ` ${empty.map(x => x.label).join(', ')} ${empty.length === 1 ? 'has' : 'have'} nobody yet and ${empty.length === 1 ? 'has' : 'have'} been noted as in demand, so Farah knows to look.`;
     also.textContent = (total
-      ? (once ? 'Each person is counted once, even when they can help with more than one thing. ' : '') + 'Their names stay private until you ask for an introduction.'
+      ? (once ? 'Each person is counted once, even when they can help with more than one thing. ' : '') + 'Their names stay private. To meet them, sign up and post what you need on Today.'
       : once
-        ? 'Farah adds people most days. Save this to come back and see who is new, or ask Farah through One Percent below.'
-        : 'Farah adds people most days. Ask Farah through One Percent below to look for someone close.') + noted;
+        ? 'Farah adds people most days. Save this to come back and see who is new, or post what you need on Today below.'
+        : 'Farah adds people most days. Post what you need on Today below, where members can point you to someone close.') + noted;
     document.getElementById('save').hidden = !once;
   }
 
@@ -736,7 +743,7 @@ function boot(DATA, live) {
       const more = now - (then || 0);
       if (more > 0) line = `${fmt(more)} more ${more === 1 ? 'person matches' : 'people match'} you than when you saved this on ${saved}. ${ppl(now)} in all.`;
       else if (now) line = `No new matches based on your selection since ${saved}. ${live && live.total ? `${fmt(now)} of the ${fmt(live.total)} people in the directory match you.` : `${ppl(now)} match you.`} Farah adds people most days.`;
-      else line = `No one matches you yet. Farah adds people most days; check back, or ask Farah through One Percent.`;
+      else line = `No one matches you yet. Farah adds people most days; check back, or post what you need on Today.`;
       backres.innerHTML = `<p class="since">${esc(line)}</p>`;
     } catch (err) {
       backres.innerHTML = quiet ? '' : `<p class="msg">${esc(err.message)}</p>`;
