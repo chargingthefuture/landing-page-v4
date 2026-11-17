@@ -136,7 +136,7 @@ const LOOK_MA_ITEMS: { q: string; solutions: string[] }[] = [
 
 // SOURCE OF TRUTH NOTE (schemes):
 //   • Scheme NAMES are canonical in the app repo:
-//     chargingthefuture/chargingthefuture → ctf/packages/web/lib/click-log/tags.ts
+//     chargingthefuture/chargingthefuture → ctf/packages/shared/src/click-log/tags.ts
 //     (CLICK_LOG_SCHEME_TAGS). ClickLog validates incident tags against that list.
 //   • This page must list the SAME names, one-for-one. When tags.ts gains a scheme,
 //     add it here in the same order; never rename or drop one that shipped.
