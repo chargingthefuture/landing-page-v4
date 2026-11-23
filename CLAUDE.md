@@ -93,6 +93,62 @@ Canonical source: [`chargingthefuture/chargingthefuture` → `.github/instructio
 - PR titles must match: concise, action-oriented, no random strings.
 - If a branch was created with a bad name, rename it before opening the PR: create a new descriptive branch from the same commits, open the PR from that, close the old one, delete the old branch.
 
+## Pull requests and the merge lifecycle (all agents)
+
+A task is not finished when the code is written — it is finished when the change is merged and the
+branch is cleaned up. Carry every change through that path, in this order, without being asked:
+
+1. Open a pull request when the work is complete. Once the task's changes are committed and the
+   descriptive branch is pushed, open a pull request from that branch against the default branch.
+   Finished work should not sit on a branch with no pull request. Give the request a descriptive,
+   plain-language title and a body that says what changed and why, in the same plain voice as every
+   other reply.
+2. Do not watch the request. Report once, right after opening, and stop; auto-merge (step 4)
+   finishes it. See *No pull-request watching* below.
+3. Keep it mergeable — fix conflicts. When a pass over open requests finds the default branch has
+   moved ahead and a request has merge
+   conflicts, bring the latest default-branch commits into the branch (rebase onto it, or merge
+   it in) and resolve the conflicts, keeping both sides' intent. If a conflict is a real, ambiguous
+   clash where either resolution changes how the code behaves, stop and ask rather than guess.
+4. Merge when it is ready. Merge once the automated checks (continuous integration, or CI) are
+   green and the request is mergeable with no unresolved "changes requested" review. Use the
+   repository's default merge method. If required checks take a while, turn on auto-merge so the
+   request merges itself the moment they pass, rather than waiting on it. Never force a merge over a
+   failing required check or an open request for changes — fix the cause, or report it and stop.
+5. Delete the branch after merge. Once the request is merged, delete the now-merged head branch
+   so old branches do not pile up.
+
+The gate in step 4 — green checks, mergeable, no open change-requests — is the safe default. A
+repository that requires human review before merge should keep that requirement: set the gate to
+match the repository's own rules rather than merging around them.
+
+### Two lanes by risk (owner decision, 2026-06-05)
+
+Pick the lane when the request is opened, from what the change touches:
+
+- Low-risk lane, the default: copy, styling, layout, documentation, refactors, type, lint and test
+  changes, dead-code removal. Open it ready for review and turn on auto-merge right away; it merges
+  itself once the checks pass.
+- Owner-review lane: anything that moves money or credits, touches sign-in or access checks, deletes
+  or migrates stored data, changes a database schema, adds or changes an interface other code calls,
+  or adds new stateful logic or a new feature area. Open it ready for review, not as a draft, and do
+  not turn on auto-merge. Say in the body that it waits on the owner's review. It is not a blocker:
+  keep working, and the owner reviews and merges it.
+
+In this repository the risky areas also include a serverless function in `api/` that reads or
+writes data, and anything touching a secret. If a risky
+request merges before its review findings were applied, open a small follow-up request with the
+findings that still hold.
+
+Mechanism, by where the agent runs:
+
+- Claude Code on the web: use the GitHub tools to open the request, update its branch from the
+  default branch, and turn on auto-merge. Do not use the pull-request activity subscription. The
+  harness may subscribe a session to every request it opens on its own; unsubscribe straight away.
+- Local Claude Code / a terminal: `gh pr create` to open it, `gh pr checks` to read check state,
+  `git rebase`/`git merge` to clear conflicts, and `gh pr merge --auto --delete-branch` (with the
+  repository's merge method) to merge and remove the branch in one step.
+
 ## No PR watching (owner directive, 2026-09-26)
 
 Never watch a pull request. After opening one, do not subscribe to its activity, do not schedule a check-in, and do not wait for its checks to finish. Report once and stop. The harness may subscribe a session to every pull request it opens on its own; unsubscribe straight away.
@@ -126,3 +182,40 @@ Each routine is a file in `.claude/commands/`, copied from `chargingthefuture/ag
 
 - Prefer `rg` (ripgrep) for recursive text and file discovery.
 - Keep a grep fallback where a search command is shown: `if command -v rg >/dev/null 2>&1; then rg -n "pattern" path; else grep -RIn "pattern" path; fi`
+
+## Never quote the owner in repository artifacts (all agents)
+
+Do not quote the owner's messages anywhere the repository can see: not in a commit message, a pull
+request title or body, a change log, a test script, a rule file, or a code comment. A pasted message
+is the owner's prompt published to git history. Write what the code does and why, in your own words.
+`Owner directive: an admin list hides nothing.` is correct; a block quote of the message, however
+short, is not. Quoting the product's own strings (a button label, an error the route returns) is
+fine; that is the artifact under discussion.
+
+## Record a reason the owner gives in neutral words (all agents)
+
+When the owner gives a reason for a decision, write a neutral version of it in any repository, and
+never their own wording, especially in a public one. In a queue line, a commit message or a pull
+request body, name no person's motive or affiliation. The full reason stays in chat.
+
+## The owner has no terminal (all agents)
+
+The owner works from a phone: no shell, no local checkout. Never end a piece of work with a command
+for the owner to run. When something has to happen outside the repository, deliver it as a screen
+in the app, as text the owner pastes into a web dashboard (the statement itself, with no shell
+wrapper), or as a workflow the owner can run from the GitHub app.
+
+## Dates come from the owner's clock (all agents)
+
+The owner is on Eastern time (UTC-4 in summer, UTC-5 in winter); agent containers run on UTC. Any
+date written into a file, a post, a file name or a change log is the owner's date. Take it from a
+commit the owner authored (`git log -1 --format=%ad --date=iso`), or subtract the offset from UTC;
+never from the container's `date`, which is a day ahead from 20:00 the owner's time.
+
+## Remove what nothing uses, in the same change (all agents)
+
+When a change leaves something with no users — a column, a function, a flag, a setting, a screen —
+delete it as part of that change. Do not list it as a follow-up or ask whether to remove it. Verify
+first: search the entire repository for readers and writers, including scripts, migrations and
+generated files. Something already unused before you arrived is different: mention it and leave it
+unless told otherwise.
