@@ -31,6 +31,26 @@ Canonical source: [`chargingthefuture/chargingthefuture` → `.github/instructio
 - Multiple introductory sentences before the actual content.
 - Filler comments or padding.
 
+### No running commentary while working (owner directive, 2026-11-23)
+- Do not narrate work in progress: no text between tool calls announcing what was just found or what comes next. The owner follows the session on a phone, and every such line is output the account pays for.
+- Write text only when the work is done, when it is blocked on something only the owner can decide or do, or when a decision changes what the owner gets (a different approach than asked, something skipped).
+- A tool call's short description field is not commentary and stays.
+
+### Banned pleasantries (enforced by the Stop hook)
+- Never in a reply: thanks / thank you, you're welcome, no problem, my pleasure, glad, happy to, excited, delighted, sorry, any form of apology, cheers, congrats / congratulations, "I appreciate" / "we appreciate", "hope this / that / you / it", feel free, warm / best / kind regards, looking forward.
+- `.claude/hooks/check-no-pleasantries.mjs` blocks a reply that carries one of these or a word in Excluded Vocabulary below, and asks for a plain restatement. The hook is the source of truth; if this list and the hook differ, the hook wins. Keep the two in step. When it blocks, restate once, briefly, then stop.
+
+### Plain language
+- No jargon, acronyms or insider terms in replies, pull requests, commit messages, comments or documentation. Prefer the plain word ("make sure" over "ensure idempotency").
+- If a technical term is genuinely needed, define it in plain words on first use. Code identifiers, file paths, command names and proper nouns are exempt.
+
+### American English (owner directive, 2026-11-23)
+- Replies, pull requests, commit messages, code comments, documentation and site copy use American spelling: "color", "behavior", "organize", "center", "license", "canceled", "gray".
+- Code identifiers, paths, quoted text and proper nouns keep their exact spelling. Lines you touch that use British spelling switch to American.
+
+### No phases
+- Never break work into "Phase 1 / Phase 2" or phased buckets. List tasks one after another in the order they must happen, and name a blocking dependency where order matters ("B is blocked by A").
+
 ### Information Density Priority
 - Max substantive content per message.
 - Min transitional or explanatory language.
@@ -43,6 +63,10 @@ Canonical source: [`chargingthefuture/chargingthefuture` → `.github/instructio
 |---|---|---|
 | punch list | list | Jargon; unclear meaning. |
 | stale | drop it; if you mean something specific, name it (out-of-date, superseded, no longer current) | "Deprecated" means retired, not out of date, so it is not a substitute. |
+| flywheel | a plain description of the loop (for example "each answer improves the next") | Jargon. |
+| console | dashboard | Developer jargon for a screen. The code identifiers `console.log`, `console.error` and `console.info` are exempt. |
+| whole, wholly | entire, all of, end to end, or drop it | The word itself, in every frame. Most uses carry nothing. |
+| "that/this/which/it is the point of / here" | end on the fact itself | The sentence after the facts that says which of them mattered. If a sentence only labels what came before it, delete it. |
 
 ## Architecture
 
@@ -85,3 +109,20 @@ Everything an agent reads stays in the session until compaction, and compaction 
 - Take a screenshot only when a visual change has to be checked, and look at it once.
 
 The owner can also compact on their own terms: typing `/compact` followed by what to keep (for example, `/compact keep the open PR list and today's rules`) compacts at a moment they choose, with their instructions shaping the summary. `/clear` starts the session over. Rules that must outlive any session go in this file, not in chat.
+
+## Slash commands (always apply)
+
+Each routine is a file in `.claude/commands/`, copied from `chargingthefuture/agents` and adapted to this repository's build. The owner does not have to type the command for it to apply; the request itself is the trigger.
+
+| Command | Applies when |
+|---|---|
+| `/br` | Any request that changes files: branch off `main`, surgical change, `npm run build`, open the PR with title and body set at creation, auto-merge on a low-risk one. Never the session's `claude/` branch. |
+| `/pr` | Open pull requests are behind, conflicted or failing the Vercel build. One pass; fix each, do not report that it needs something. |
+| `/fix` | The owner points at a sentence that reads badly. Rewrite it, fix every copy, push. Two-line reply, no explanation. |
+| `/fl` | The owner asks whether the chat can be archived. Open tasks only; an open pull request is not one. |
+| `/sync` | The owner asks to bring this repository in line with the `chargingthefuture/agents` baseline. One pull request. |
+
+## Search tooling
+
+- Prefer `rg` (ripgrep) for recursive text and file discovery.
+- Keep a grep fallback where a search command is shown: `if command -v rg >/dev/null 2>&1; then rg -n "pattern" path; else grep -RIn "pattern" path; fi`
