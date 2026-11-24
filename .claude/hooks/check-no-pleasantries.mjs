@@ -52,6 +52,7 @@ const VOCABULARY = [
   // as insistence, and a reader can weigh facts without being told which one to weigh.
   { re: /\b(?:that|this|which|it) is the point (?:of|here)\b/i,
     use: 'end on the fact itself -- if a sentence only labels what came before it, delete it' },
+  { re: /\bpoint of the thing\b/i, use: 'end on the fact itself' },
 ];
 
 function readStdin() {
@@ -103,7 +104,8 @@ try {
         reason:
           `The reply contains a banned pleasantry/feeling/sign-off ("${pleasantry[0]}"). ` +
           'Restate the result in plain, factual language — no thanks, apologies, well-wishes, ' +
-          'sign-offs, jargon, or first-person feeling words — then stop.',
+          'sign-offs, jargon, or first-person feeling words — then stop. Restate once and briefly: do not ' +
+          're-send the full reply with one word swapped.',
       }),
     );
   } else if (vocab) {
@@ -112,7 +114,8 @@ try {
         decision: 'block',
         reason:
           `The reply uses a banned word ("${vocab.term}"). Use instead: ${vocab.use}. ` +
-          'Restate in plain language, then stop.',
+          'Restate once and briefly in plain language, then stop. Do not re-send the full reply with ' +
+          'one word swapped.',
       }),
     );
   }

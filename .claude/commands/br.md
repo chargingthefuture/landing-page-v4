@@ -24,6 +24,7 @@ the only check is the Vercel build.
 - Keep the change minimal and surgical — change only what the task requires.
 - Never overwrite shipped design or copy without the owner's approval. `index.html` and
   `src/paper.css` share the color tokens and type; change both together, per `CLAUDE.md`.
+- Never put a model identifier in any repo artifact.
 
 ## 3. Verify locally before pushing
 
@@ -33,7 +34,8 @@ Run `npm run build` (type-check and production build). Fix what it finds. Do not
 
 - Title: Conventional Commit (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `ci:`, `perf:`,
   `test:`, `build:`, `style:`, `revert:`).
-- Body: what changed and why, in plain words. Never quote the owner.
+- Body: what changed and why, in plain words, and `Closes #<issue>` for any issue it resolves. Never
+  quote the owner.
 - Open ready for review, never as a draft.
 
 ## 5. Pick the lane
